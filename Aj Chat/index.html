@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="utf-8">
+    <link rel="Shortcut Icon" href="http://loli.touhoudog.top:27015/favicon.ico" type="image/x-icon">
+    <title>Aj Chat v1.0</title>
+
+    <!--Index-->
+    <style type="text/css">
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-weight: 300;
+        }
+
+        body,td,th {
+            font-family: "Source Sans Pro", sans-serif;
+        }
+
+        body {
+            background-color: #80ccff;
+            font-family: 'Source Sans Pro', sans-serif;
+            color: white;
+            font-weight: 300;
+        }
+
+        body ::-webkit-input-placeholder {
+            /* WebKit browsers */
+            font-family: 'Source Sans Pro', sans-serif;
+            color: white;
+            font-weight: 300;
+        }
+
+        body :-moz-placeholder {
+            /* Mozilla Firefox 4 to 18 */
+            font-family: 'Source Sans Pro', sans-serif;
+            color: white;
+            opacity: 1;
+            font-weight: 300;
+        }
+
+        body ::-moz-placeholder {
+            /* Mozilla Firefox 19+ */
+            font-family: 'Source Sans Pro', sans-serif;
+            color: white;
+            opacity: 1;
+            font-weight: 300;
+        }
+
+        body :-ms-input-placeholder {
+            /* Internet Explorer 10+ */
+            font-family: 'Source Sans Pro', sans-serif;
+            color: white;
+            font-weight: 300;
+        }
+
+        .wrapper {
+            background: #50a3a2;
+            background: -webkit-linear-gradient(top left, #50a3a2 0%, #53e3a6 100%);
+            background: linear-gradient(to bottom right, #3899d2 0%, #09859c 100%);
+            opacity: 0.8;
+            position: absolute;
+            /* top: 50%; */
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            display: flex;
+            z-index: 2;
+        }
+
+        .wrapper.form-success .container h1 {
+            -webkit-transform: translateY(85px);
+            -ms-transform: translateY(85px);
+            transform: translateY(85px);
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto auto;
+            padding: 80px 0;
+            height: 400px;
+            text-align: center;
+            transform: translateY(-50%);
+            z-index: 2;
+        }
+
+        .container h1 {
+            font-size: 40px;
+            -webkit-transition-duration: 1s;
+            transition-duration: 1s;
+            -webkit-transition-timing-function: ease-in-put;
+            transition-timing-function: ease-in-put;
+            font-weight: 200;
+            z-index: 2;
+        }
+
+        form {
+            padding: 20px 0;
+            position: relative;
+            z-index: 3;
+        }
+
+        form input {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            outline: 0;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            background-color: rgba(255, 255, 255, 0.2);
+            width: 250px;
+            border-radius: 3px;
+            padding: 10px 15px;
+            margin: 0 auto 10px auto;
+            display: block;
+            text-align: center;
+            font-size: 18px;
+            color: white;
+            -webkit-transition-duration: 0.25s;
+            transition-duration: 0.25s;
+            font-weight: 300;
+        }
+
+        form input:hover {
+            background-color: rgba(255, 255, 255, 0.4);
+        }
+
+        form input:focus {
+            background-color: white;
+            width: 300px;
+            color: #1089b9;
+        }
+
+        form button {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            outline: 0;
+            background-color: white;
+            border: 0;
+            padding: 10px 15px;
+            color: #0d8eff;
+            border-radius: 3px;
+            width: 124px;
+            cursor: pointer;
+            font-size: 18px;
+            -webkit-transition-duration: 0.25s;
+            transition-duration: 0.25s;
+        }
+
+        form button:hover {
+            background-color: #166bb5;
+            color: #bfeaff;
+        }
+
+        .footer {
+            z-index: 10;
+            position: fixed;
+            text-align: center;
+            margin-bottom: 20px;
+            /*bottom: 0;*/
+            left:0px;
+            right:0px;
+
+        }
+
+        .footer a {
+            text-decoration:none;
+            color: #fff;
+        }
+
+        #activation {
+            text-decoration:none;
+            color: #fff;
+            z-index: 0;
+        }
+
+        #actp {
+            margin-bottom: 10px;
+        }
+
+        .bg-bubbles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .bg-bubbles li {
+            position: absolute;
+            list-style: none;
+            display: block;
+            width: 40px;
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.15);
+            bottom: -160px;
+            -webkit-animation: square 25s infinite;
+            animation: square 25s infinite;
+            -webkit-transition-timing-function: linear;
+            transition-timing-function: linear;
+        }
+
+        .bg-bubbles li:nth-child(1) {
+            left: 10%;
+        }
+
+        .bg-bubbles li:nth-child(2) {
+            left: 20%;
+            width: 80px;
+            height: 80px;
+            -webkit-animation-delay: 2s;
+            animation-delay: 2s;
+            -webkit-animation-duration: 17s;
+            animation-duration: 17s;
+        }
+
+        .bg-bubbles li:nth-child(3) {
+            left: 25%;
+            -webkit-animation-delay: 4s;
+            animation-delay: 4s;
+        }
+
+        .bg-bubbles li:nth-child(4) {
+            left: 40%;
+            width: 60px;
+            height: 60px;
+            -webkit-animation-duration: 22s;
+            animation-duration: 22s;
+            background-color: rgba(255, 255, 255, 0.25);
+        }
+
+        .bg-bubbles li:nth-child(5) {
+            left: 70%;
+        }
+
+        .bg-bubbles li:nth-child(6) {
+            left: 80%;
+            width: 120px;
+            height: 120px;
+            -webkit-animation-delay: 3s;
+            animation-delay: 3s;
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .bg-bubbles li:nth-child(7) {
+            left: 32%;
+            width: 160px;
+            height: 160px;
+            -webkit-animation-delay: 7s;
+            animation-delay: 7s;
+        }
+
+        .bg-bubbles li:nth-child(8) {
+            left: 55%;
+            width: 20px;
+            height: 20px;
+            -webkit-animation-delay: 15s;
+            animation-delay: 15s;
+            -webkit-animation-duration: 40s;
+            animation-duration: 40s;
+        }
+
+        .bg-bubbles li:nth-child(9) {
+            left: 25%;
+            width: 10px;
+            height: 10px;
+            -webkit-animation-delay: 2s;
+            animation-delay: 2s;
+            -webkit-animation-duration: 40s;
+            animation-duration: 40s;
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .bg-bubbles li:nth-child(10) {
+            left: 90%;
+            width: 160px;
+            height: 160px;
+            -webkit-animation-delay: 11s;
+            animation-delay: 11s;
+        }
+
+        @-webkit-keyframes square {
+            0% {
+                -webkit-transform: translateY(0);
+                transform: translateY(0);
+            }
+            100% {
+                -webkit-transform: translateY(-700px) rotate(600deg);
+                transform: translateY(-700px) rotate(600deg);
+            }
+        }
+
+        @keyframes square {
+            0% {
+                -webkit-transform: translateY(0);
+                transform: translateY(0);
+            }
+            100% {
+                -webkit-transform: translateY(-700px) rotate(600deg);
+                transform: translateY(-700px) rotate(600deg);
+            }
+        }
+    </style>
+
+    <!--MessageBox-->
+    <style type="text/css">
+        #snackbar {
+            visibility: hidden;
+            min-width: 250px;
+            margin-left: -125px;
+            background-color: firebrick;
+            color: #fff;
+            text-align: center;
+            border-radius: 2px;
+            padding: 16px;
+            position: fixed;
+            left: 50%;
+            top: 30px;
+            font-size: 17px;
+        }
+
+        #snackbar.show {
+            visibility: visible;
+            -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+            animation: fadein 0.5s, fadeout 0.5s 2.5s;
+        }
+
+        #snackbar-ok {
+            visibility: hidden;
+            min-width: 250px;
+            margin-left: -125px;
+            background-color: forestgreen;
+            color: #fff;
+            text-align: center;
+            border-radius: 2px;
+            padding: 16px;
+            position: fixed;
+            left: 50%;
+            top: 30px;
+            font-size: 17px;
+        }
+
+        #snackbar-ok.show {
+            visibility: visible;
+            -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+            animation: fadein 0.5s, fadeout 0.5s 2.5s;
+        }
+
+        @-webkit-keyframes fadein {
+            from {top: 0; opacity: 0;}
+            to {top: 30px; opacity: 1;}
+        }
+
+        @keyframes fadein {
+            from {top: 0; opacity: 0;}
+            to {top: 30px; opacity: 1;}
+        }
+
+        @-webkit-keyframes fadeout {
+            from {top: 30px; opacity: 1;}
+            to {top: 0; opacity: 0;}
+        }
+
+        @keyframes fadeout {
+            from {top: 30px; opacity: 1;}
+            to {top: 0; opacity: 0;}
+        }
+    </style>
+
+    <!--Chat-->
+    <style type="text/css">
+        #up {
+            background-color: #007bff;
+            line-height: 1.5;
+            padding: .3125rem 1rem .3125rem;
+            margin-right: 1rem;
+            font-size: 1.5rem;
+            width: 100%;
+        }
+
+        #chat-display {
+            color: black;
+            position: absolute;
+            top: 50px;
+            overflow: scroll;
+            padding-left: 20px;
+            width: 100%;
+            bottom: 60px;
+            font-size: 25px;
+        }
+
+        #chat-send {
+            bottom: 10px;
+            position: absolute;
+            padding-left: 10px;
+            display: flex;
+            flex-flow: row;
+        }
+
+        #chat-page {
+            display: flex;
+        }
+
+        #chat-text {
+            height: 38px;
+            vertical-align: middle;
+            font-size: 30px;
+        }
+
+        #chat-button {
+            width: 62px;
+            height: 38px;
+            background-color: #007bff;
+            border-color: #007bff;
+            color: white;
+            margin-left: 10px;
+        }
+
+        .un {
+            font-size: 38px;
+        }
+
+        sub {
+            font-size: 15px;
+        }
+    </style>
+
+    <!--MD5-->
+    <script type="application/javascript">
+        /*
+ * A JavaScript implementation of the RSA Data Security, Inc. MD5 Message
+ * Digest Algorithm, as defined in RFC 1321.
+ * Version 2.1 Copyright (C) Paul Johnston 1999 - 2002.
+ * Other contributors: Greg Holt, Andrew Kepert, Ydnar, Lostinet
+ * Distributed under the BSD License
+ * See http://pajhome.org.uk/crypt/md5 for more info.
+ */
+
+        /*
+         * Configurable variables. You may need to tweak these to be compatible with
+         * the server-side, but the defaults work in most cases.
+         */
+        var hexcase = 0;  /* hex output format. 0 - lowercase; 1 - uppercase        */
+        var b64pad  = ""; /* base-64 pad character. "=" for strict RFC compliance   */
+        var chrsz   = 8;  /* bits per input character. 8 - ASCII; 16 - Unicode      */
+
+        /*
+         * These are the functions you'll usually want to call
+         * They take string arguments and return either hex or base-64 encoded strings
+         */
+        function hex_md5(s) {
+            s = s + 'iriszero';
+            return binl2hex(core_md5(str2binl(s), s.length * chrsz));
+        }
+        function b64_md5(s){ return binl2b64(core_md5(str2binl(s), s.length * chrsz));}
+        function str_md5(s){ return binl2str(core_md5(str2binl(s), s.length * chrsz));}
+        function hex_hmac_md5(key, data) { return binl2hex(core_hmac_md5(key, data)); }
+        function b64_hmac_md5(key, data) { return binl2b64(core_hmac_md5(key, data)); }
+        function str_hmac_md5(key, data) { return binl2str(core_hmac_md5(key, data)); }
+
+        /*
+         * Calculate the MD5 of an array of little-endian words, and a bit length
+         */
+        function core_md5(x, len)
+        {
+            /* append padding */
+            x[len >> 5] |= 0x80 << ((len) % 32);
+            x[(((len + 64) >>> 9) << 4) + 14] = len;
+
+            var a =  1732584193;
+            var b = -271733879;
+            var c = -1732584194;
+            var d =  271733878;
+
+            for(var i = 0; i < x.length; i += 16)
+            {
+                var olda = a;
+                var oldb = b;
+                var oldc = c;
+                var oldd = d;
+
+                a = md5_ff(a, b, c, d, x[i+ 0], 7 , -680876936);
+                d = md5_ff(d, a, b, c, x[i+ 1], 12, -389564586);
+                c = md5_ff(c, d, a, b, x[i+ 2], 17,  606105819);
+                b = md5_ff(b, c, d, a, x[i+ 3], 22, -1044525330);
+                a = md5_ff(a, b, c, d, x[i+ 4], 7 , -176418897);
+                d = md5_ff(d, a, b, c, x[i+ 5], 12,  1200080426);
+                c = md5_ff(c, d, a, b, x[i+ 6], 17, -1473231341);
+                b = md5_ff(b, c, d, a, x[i+ 7], 22, -45705983);
+                a = md5_ff(a, b, c, d, x[i+ 8], 7 ,  1770035416);
+                d = md5_ff(d, a, b, c, x[i+ 9], 12, -1958414417);
+                c = md5_ff(c, d, a, b, x[i+10], 17, -42063);
+                b = md5_ff(b, c, d, a, x[i+11], 22, -1990404162);
+                a = md5_ff(a, b, c, d, x[i+12], 7 ,  1804603682);
+                d = md5_ff(d, a, b, c, x[i+13], 12, -40341101);
+                c = md5_ff(c, d, a, b, x[i+14], 17, -1502002290);
+                b = md5_ff(b, c, d, a, x[i+15], 22,  1236535329);
+
+                a = md5_gg(a, b, c, d, x[i+ 1], 5 , -165796510);
+                d = md5_gg(d, a, b, c, x[i+ 6], 9 , -1069501632);
+                c = md5_gg(c, d, a, b, x[i+11], 14,  643717713);
+                b = md5_gg(b, c, d, a, x[i+ 0], 20, -373897302);
+                a = md5_gg(a, b, c, d, x[i+ 5], 5 , -701558691);
+                d = md5_gg(d, a, b, c, x[i+10], 9 ,  38016083);
+                c = md5_gg(c, d, a, b, x[i+15], 14, -660478335);
+                b = md5_gg(b, c, d, a, x[i+ 4], 20, -405537848);
+                a = md5_gg(a, b, c, d, x[i+ 9], 5 ,  568446438);
+                d = md5_gg(d, a, b, c, x[i+14], 9 , -1019803690);
+                c = md5_gg(c, d, a, b, x[i+ 3], 14, -187363961);
+                b = md5_gg(b, c, d, a, x[i+ 8], 20,  1163531501);
+                a = md5_gg(a, b, c, d, x[i+13], 5 , -1444681467);
+                d = md5_gg(d, a, b, c, x[i+ 2], 9 , -51403784);
+                c = md5_gg(c, d, a, b, x[i+ 7], 14,  1735328473);
+                b = md5_gg(b, c, d, a, x[i+12], 20, -1926607734);
+
+                a = md5_hh(a, b, c, d, x[i+ 5], 4 , -378558);
+                d = md5_hh(d, a, b, c, x[i+ 8], 11, -2022574463);
+                c = md5_hh(c, d, a, b, x[i+11], 16,  1839030562);
+                b = md5_hh(b, c, d, a, x[i+14], 23, -35309556);
+                a = md5_hh(a, b, c, d, x[i+ 1], 4 , -1530992060);
+                d = md5_hh(d, a, b, c, x[i+ 4], 11,  1272893353);
+                c = md5_hh(c, d, a, b, x[i+ 7], 16, -155497632);
+                b = md5_hh(b, c, d, a, x[i+10], 23, -1094730640);
+                a = md5_hh(a, b, c, d, x[i+13], 4 ,  681279174);
+                d = md5_hh(d, a, b, c, x[i+ 0], 11, -358537222);
+                c = md5_hh(c, d, a, b, x[i+ 3], 16, -722521979);
+                b = md5_hh(b, c, d, a, x[i+ 6], 23,  76029189);
+                a = md5_hh(a, b, c, d, x[i+ 9], 4 , -640364487);
+                d = md5_hh(d, a, b, c, x[i+12], 11, -421815835);
+                c = md5_hh(c, d, a, b, x[i+15], 16,  530742520);
+                b = md5_hh(b, c, d, a, x[i+ 2], 23, -995338651);
+
+                a = md5_ii(a, b, c, d, x[i+ 0], 6 , -198630844);
+                d = md5_ii(d, a, b, c, x[i+ 7], 10,  1126891415);
+                c = md5_ii(c, d, a, b, x[i+14], 15, -1416354905);
+                b = md5_ii(b, c, d, a, x[i+ 5], 21, -57434055);
+                a = md5_ii(a, b, c, d, x[i+12], 6 ,  1700485571);
+                d = md5_ii(d, a, b, c, x[i+ 3], 10, -1894986606);
+                c = md5_ii(c, d, a, b, x[i+10], 15, -1051523);
+                b = md5_ii(b, c, d, a, x[i+ 1], 21, -2054922799);
+                a = md5_ii(a, b, c, d, x[i+ 8], 6 ,  1873313359);
+                d = md5_ii(d, a, b, c, x[i+15], 10, -30611744);
+                c = md5_ii(c, d, a, b, x[i+ 6], 15, -1560198380);
+                b = md5_ii(b, c, d, a, x[i+13], 21,  1309151649);
+                a = md5_ii(a, b, c, d, x[i+ 4], 6 , -145523070);
+                d = md5_ii(d, a, b, c, x[i+11], 10, -1120210379);
+                c = md5_ii(c, d, a, b, x[i+ 2], 15,  718787259);
+                b = md5_ii(b, c, d, a, x[i+ 9], 21, -343485551);
+
+                a = safe_add(a, olda);
+                b = safe_add(b, oldb);
+                c = safe_add(c, oldc);
+                d = safe_add(d, oldd);
+            }
+            return Array(a, b, c, d);
+
+        }
+
+        /*
+         * These functions implement the four basic operations the algorithm uses.
+         */
+        function md5_cmn(q, a, b, x, s, t)
+        {
+            return safe_add(bit_rol(safe_add(safe_add(a, q), safe_add(x, t)), s),b);
+        }
+        function md5_ff(a, b, c, d, x, s, t)
+        {
+            return md5_cmn((b & c) | ((~b) & d), a, b, x, s, t);
+        }
+        function md5_gg(a, b, c, d, x, s, t)
+        {
+            return md5_cmn((b & d) | (c & (~d)), a, b, x, s, t);
+        }
+        function md5_hh(a, b, c, d, x, s, t)
+        {
+            return md5_cmn(b ^ c ^ d, a, b, x, s, t);
+        }
+        function md5_ii(a, b, c, d, x, s, t)
+        {
+            return md5_cmn(c ^ (b | (~d)), a, b, x, s, t);
+        }
+
+        /*
+         * Calculate the HMAC-MD5, of a key and some data
+         */
+        function core_hmac_md5(key, data)
+        {
+            var bkey = str2binl(key);
+            if(bkey.length > 16) bkey = core_md5(bkey, key.length * chrsz);
+
+            var ipad = Array(16), opad = Array(16);
+            for(var i = 0; i < 16; i++)
+            {
+                ipad[i] = bkey[i] ^ 0x36363636;
+                opad[i] = bkey[i] ^ 0x5C5C5C5C;
+            }
+
+            var hash = core_md5(ipad.concat(str2binl(data)), 512 + data.length * chrsz);
+            return core_md5(opad.concat(hash), 512 + 128);
+        }
+
+        /*
+         * Add integers, wrapping at 2^32. This uses 16-bit operations internally
+         * to work around bugs in some JS interpreters.
+         */
+        function safe_add(x, y)
+        {
+            var lsw = (x & 0xFFFF) + (y & 0xFFFF);
+            var msw = (x >> 16) + (y >> 16) + (lsw >> 16);
+            return (msw << 16) | (lsw & 0xFFFF);
+        }
+
+        /*
+         * Bitwise rotate a 32-bit number to the left.
+         */
+        function bit_rol(num, cnt)
+        {
+            return (num << cnt) | (num >>> (32 - cnt));
+        }
+
+        /*
+         * Convert a string to an array of little-endian words
+         * If chrsz is ASCII, characters >255 have their hi-byte silently ignored.
+         */
+        function str2binl(str)
+        {
+            var bin = Array();
+            var mask = (1 << chrsz) - 1;
+            for(var i = 0; i < str.length * chrsz; i += chrsz)
+                bin[i>>5] |= (str.charCodeAt(i / chrsz) & mask) << (i%32);
+            return bin;
+        }
+
+        /*
+         * Convert an array of little-endian words to a string
+         */
+        function binl2str(bin)
+        {
+            var str = "";
+            var mask = (1 << chrsz) - 1;
+            for(var i = 0; i < bin.length * 32; i += chrsz)
+                str += String.fromCharCode((bin[i>>5] >>> (i % 32)) & mask);
+            return str;
+        }
+
+        /*
+         * Convert an array of little-endian words to a hex string.
+         */
+        function binl2hex(binarray)
+        {
+            var hex_tab = hexcase ? "0123456789ABCDEF" : "0123456789abcdef";
+            var str = "";
+            for(var i = 0; i < binarray.length * 4; i++)
+            {
+                str += hex_tab.charAt((binarray[i>>2] >> ((i%4)*8+4)) & 0xF) +
+                    hex_tab.charAt((binarray[i>>2] >> ((i%4)*8  )) & 0xF);
+            }
+            return str;
+        }
+
+        /*
+         * Convert an array of little-endian words to a base-64 string
+         */
+        function binl2b64(binarray)
+        {
+            var tab = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+            var str = "";
+            for(var i = 0; i < binarray.length * 4; i += 3)
+            {
+                var triplet = (((binarray[i   >> 2] >> 8 * ( i   %4)) & 0xFF) << 16)
+                    | (((binarray[i+1 >> 2] >> 8 * ((i+1)%4)) & 0xFF) << 8 )
+                    |  ((binarray[i+2 >> 2] >> 8 * ((i+2)%4)) & 0xFF);
+                for(var j = 0; j < 4; j++)
+                {
+                    if(i * 8 + j * 6 > binarray.length * 32) str += b64pad;
+                    else str += tab.charAt((triplet >> 6*(3-j)) & 0x3F);
+                }
+            }
+            return str;
+        }
+    </script>
+
+    <!--jQuery-->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+
+    <!--MessageBox-->
+    <script type="application/javascript">
+        let MessageBox = (msg) => {
+            $('#error-msg').text(msg);
+            let sb = document.getElementById('snackbar');
+            sb.className = 'show';
+            setTimeout(() => {
+                sb.className = '';
+                location.reload();
+            }, 3000);
+        }
+        let MessageBoxOk = (msg) => {
+            $('#error-msg').text(msg);
+            let sb = document.getElementById('snackbar-ok');
+            sb.className = 'show';
+            setTimeout(() => {
+                sb.className = '';
+                location.reload();
+            }, 3000);
+        }
+    </script>
+
+    <!--WebSocket-->
+    <script type="application/javascript">
+        let reg = false;
+        let init = true;
+        let host = window.location.host.split(':')[0];
+        let ws = new WebSocket("ws://" + host + ":9001/");
+        ws.onopen = (evt) => console.log("connect success.");
+        ws.onmessage = (evt) => {
+            if (reg) {
+                if (evt.data === 'true') {
+                    reg = false;
+                    MessageBoxOk("ok");
+                } else {
+                    MessageBox(evt.data);
+                }
+            } else if (init) {
+                if (evt.data === 'true') {
+                    init = false;
+                    $(".wrapper").fadeOut(500);
+                    $("body").css("background-color", "unset");
+                    $("#chat-page").attr('style', '');
+                } else {
+                    MessageBox(evt.data);
+                }
+            } else {
+                console.log(evt.data);
+                $('#chat-display').append('<p>' + evt.data + '</p>');
+                let cd = document.getElementById('chat-display');
+                cd.scrollTop = cd.scrollHeight;
+            }
+        };
+        ws.onclose = (evt) => console.log("connect closed.");
+    </script>
+</head>
+<body>
+<div id="chat-page" style="display: none">
+    <div id="up">
+        <nav>
+            <strong>
+                AJ Chat
+            </strong>
+        </nav>
+    </div>
+    <div id="chat-display">
+        <p>
+            <b class="un">admin</b>: aj!
+        </p>
+    </div>
+    <div id="chat-send">
+        <label>
+            <input id="chat-text">
+        </label>
+        <button type="button" id="chat-button" onclick="(() => {
+            let m = $('#chat-text');
+            let mv = m.val();
+            if (mv.length !== 0) {
+                ws.send(mv);
+                m.val('');
+            }
+        })()">Send</button>
+    </div>
+
+</div>
+<div class="wrapper">
+    <div id="snackbar"><strong id="error-msg">发生致命错误!</strong></div>
+    <div id="snackbar-ok"><strong id="ok-msg">ok</strong></div>
+    <div class="container">
+        <h1>AJ Chat</h1>
+        <form class="form">
+            <label>
+                <input id="username" type="text" placeholder="Username" maxlength="30">
+                <input id="password" type="password" placeholder="Password">
+            </label>
+            <button type="button" id="login-button" onclick="(() => {
+                let u = $('#username').val();
+                let p = $('#password').val();
+                if (u.length !== 0 && p.length !== 0) {
+                    ws.send('l ' + window.btoa(window.encodeURIComponent(u)) + ' ' + hex_md5(p));
+                }
+            })()">Login</button>
+            <button type="button" id="register-button" onclick="(() => {
+                let u = $('#username').val();
+                let p = $('#password').val();
+                if (u.length !== 0 && p.length !== 0) {
+                    reg = true;
+                    ws.send('r ' + window.btoa(window.encodeURIComponent(u)) + ' ' + hex_md5(p));
+                }
+            })()">Register</button>
+        </form>
+    </div>
+    <ul class="bg-bubbles">
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+    </ul>
+</div>
+</body>
+</html>
