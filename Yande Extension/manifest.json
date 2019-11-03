@@ -1,0 +1,26 @@
+{
+	"name": "Yande Extension",
+	"author": "https://www.iriszero.top",
+	"version": "1.0.0",
+	"manifest_version": 2,
+	"description": "Yande Extension",
+	"icons": {
+		"16": "img/resetview.ico"
+	},
+	"content_scripts": [
+		{
+			"js": [
+				"fuck.js"
+			],
+			"matches": [
+				"https://yande.re/post",
+				"https://yande.re/post?*"
+			],
+			"run_at": "document_end"
+		}
+	],
+	"permissions": [
+		"https://yande.re/*"
+	],
+	"content_security_policy": "script-src 'self'; object-src 'self'"
+}
