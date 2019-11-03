@@ -1,0 +1,10 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="cc.iriszero.mmp.MainActivity">
+    <item
+        android:id="@+id/showAPIC"
+        android:orderInCategory="100"
+        android:title="APIC"
+        app:showAsAction="never" />
+</menu>
