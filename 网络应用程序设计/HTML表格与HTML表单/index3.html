@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <title>test</title>
+    <style>
+        table{
+            width: 100%;
+            table-layout: fixed;
+            word-break: break-word;
+            text-align: center;
+        }
+        th{
+            background-color: rgb(0, 0, 0);
+            color: rgb(255, 255, 255);
+        }
+        .type1{
+            background: rgb(201, 201, 201);
+        }
+        .type2{
+            background: rgb(61, 181, 231);
+        }
+        .type3{
+            background: rgb(253, 140, 64);
+        }
+        .type4{
+            background: rgb(242, 156, 119);
+        }
+    </style>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script type="application/javascript">
+        $(function(){
+            var heighest = 0;
+            $('tr').each(function(){
+                heighest = ($(this).height() > heighest) ? $(this).height() : heighest;
+            });
+            $('tr').css('height',heighest + 'px');
+        });
+    </script>
+</head>
+<body>
+<table>
+    <tr><th></th><th>周一</th><th>周二</th><th>周三</th><th>周四</th><th>周五</th><th>周六</th><th>周日</th></tr>
+    <tr>
+        <td rowspan="2">第一<br>大节</td>
+        <td rowspan="2" class="type1">网络应用程序设计@4201+4202（1-16周 全部）</td>
+        <td rowspan="2" class="type2">信息安全@1117（2-17周 全部）</td>
+        <td></td>
+        <td rowspan="2" class="type1">网络应用程序设计@4201+4202（1-16周 单周）</td>
+        <td></td><td></td><td></td>
+    </tr><tr></tr>
+    <tr>
+        <td rowspan="2">第二<br>大节</td>
+        <td></td>
+        <td rowspan="2" class="type2">信息安全@4203+4204（14-17周 全部）</td>
+        <td rowspan="2" class="type3">计算机图形学 @1305（1-9周 全部）</td>
+        <td rowspan="2" class="type3">计算机组成原理 @1115（1-14周 全部）</td>
+        <td rowspan="2" class="type3">计算机组成原理 @1109（1-14周 全部）</td>
+        <td></td><td></td>
+    </tr><tr></tr>
+    <tr>
+        <td rowspan="2">第三<br>大节</td>
+        <td rowspan="2" class="type3">计算机图形学 @1304（1-9周 全部）</td>
+        <td rowspan="2" class="type3">计算机专业英语@1105（1-16周 全部）</td>
+        <td rowspan="2" class="type4">算法分析与设计Ⅰ@1105（1-10周 全部）</td>
+        <td></td><td></td><td></td><td></td>
+    </tr><tr></tr>
+    <tr>
+        <td rowspan="2">第四<br>大节</td>
+        <td rowspan="2" class="type4">算法分析与设计Ⅰ@1105（1-10周 全部）</td>
+        <td></td><td></td><td></td>
+        <td rowspan="2" class="type4">算法分析与设计Ⅰ@4205+4206（4-11周 全部）</td>
+        <td></td><td></td>
+    </tr><tr></tr>
+</table>
+</body>
+</html>
