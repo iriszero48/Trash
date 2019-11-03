@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="utf-8"/>
+    <title>test</title>
+    <style type="text/css">
+        textarea{
+            width: 98%;
+            overflow: auto;
+        }
+        td{
+            text-align: left;
+        }
+        tr{
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<form>
+    <table border="1">
+        <tr style="background-color: #ccccff"><th>Name</th><th>Value</th></tr>
+        <tr><td>Sex</td><td><label><input type="text"></label></td></tr>
+        <tr><td>Sex</td><td><label><input type="radio" name="sex" value="male">Male<br><input type="radio" name="sex" value="female" checked>Female</label></td></tr>
+        <tr><td>Eye color</td><td><label><select name="eye color"><option value="green">green</option></select></label></td></tr>
+        <tr><td>Check all that apply</td><td><label><input type="checkbox" name="check" value="6"></label>Over 6 feet tall<br><label><input type="checkbox" name="check" value="200"></label>Over 200 pounds</td></tr>
+        <tr><td colspan="2">Describe your athletic ability:<br><label><textarea name="message" rows="10"></textarea></label><br></td></tr>
+        <tr><td colspan="2" style="text-align: center"><input type="submit" value="Entry my information"></td></tr>
+    </table>
+</form>
+</body>
+</html>
