@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <title>请您欣赏音乐</title>
+</head>
+<body>
+<audio id="player" controls="controls" src="http://tohodog.top/Massive%20New%20Krew%20-%20Pellestyle.mp3" preload="auto"></audio>
+<script type="text/javascript">
+    let times = 0, limit = 2;
+    document.getElementById('player').addEventListener('ended',() => {
+        if (++times < limit) {
+            document.getElementById('player').play();
+        }
+    })
+</script>
+</body>
+</html>
