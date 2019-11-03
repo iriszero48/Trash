@@ -1,0 +1,1 @@
+while true; do { echo 'HTTP/1.1 200 OK\r\nContent-length:56\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n<!DOCTYPE html><html><body>Goodbye, world!</body></html>'; } | nc -l 18855 -q 1 > /dev/null; done
