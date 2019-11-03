@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+  <EditText
+        android:id="@+id/cb"
+        android:layout_width="match_parent"
+        android:imeOptions="actionGo"
+        android:inputType="text"
+        android:layout_height="wrap_content" />
+	<EditText
+        android:id="@+id/ur"
+        android:layout_width="match_parent"
+        android:imeOptions="actionGo"
+        android:inputType="text"
+        android:layout_height="wrap_content" />
+	<EditText
+        android:id="@+id/pw"
+        android:layout_width="match_parent"
+        android:imeOptions="actionGo"
+        android:inputType="text"
+        android:layout_height="wrap_content" />
+	<Button android:id="@+id/fuck"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:text="fuck it" />
+</LinearLayout>
