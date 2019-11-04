@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DistributedEncoderMasterConfigVer.I>
+  <Paths>
+    <Path ID="FFmpeg" Index="1">"D:\Program Files\ffmpeg-20170130-cba4f0e-win64-static\ffmpeg-20170130-cba4f0e-win64-static\bin\ffmpeg.exe"</Path>
+  </Paths>
+  <CADs>
+    <CAD ID="TreeDiagram" Index="1" Performance="40">192.168.0.100</CAD>
+    <CAD ID="Melchior" Index="2" Performance="19">192.168.0.103</CAD>
+    <CAD ID="Balthasar" Index="3" Performance="17">192.168.0.105</CAD>
+    <CAD ID="Casper" Index="4" Performance="108">192.168.0.106</CAD>
+    <CAD ID="Cai" Index="5" Performance="30">192.168.0.108</CAD>
+    <CAD ID="NERvGear" Index="6" Performance="10">192.168.0.109</CAD>
+    <CAD ID="AmuSphere" Index="7" Performance="15">192.168.0.110</CAD>
+    <CAD ID="Medicuboid" Index="8" Performance="0">192.168.0.111</CAD>
+    <CAD ID="SoulTranslator" Index="9" Performance="2">192.168.0.117</CAD>
+    <CAD ID="Trident" Index="10" Performance="2"></CAD>
+    <CAD ID="CAD.40.1MBPS" Index="11" Performance=""></CAD>
+  </CADs>
+  <Functions>
+  	<Function ID="Speed" Index="1" Distributed="true">
+  		<Key Type="var0" Info="multiple">2</Key>
+  		<Key Type="word" Index="1" Space="true" Writeable="false" Info="" Operation="FFmpeg"></Key>
+  		<Key Type="word" Index="2" Space="true" Writeable="false" Info="" Operation="">-i</Key>
+  		<Key Type="word" Index="3" Space="true" Writeable="true" Info="input path" Operation=""></Key>
+  		<Key Type="word" Index="4" Space="true" Writeable="false" Info="" Operation="">-r</Key> 		
+  		<Key Type="word" Index="5" Space="true" Writeable="true" Info="input FPS" Operation="this * var0">30</Key>
+  		<Key Type="word" Index="6" Space="true" Writeable="false" Info="" Operation="">-filter:v "setpts=</Key>
+  		<Key Type="word" Index="7" Space="false" Writeable="false" Info="" Operation="1 / var0"></Key>
+  		<Key Type="word" Index="8" Space="true" Writeable="false" Info="" Operation="">*PTS"</Key>
+  		<Key Type="word" Index="9" Space="false" Writeable="true" Info="output path" Operation=""></Key>
+  	</Function>
+  	<Function ID="Compress" Index="2" Distributed="true">
+  		
+  	</Function>
+  	<Function ID="Infomations" Index="3" Distributed="false">
+  		<Key Type="word" Index="1" Space="true" Writeable="false" Info="" Operation="FFmpeg"></Key>
+  		<Key Type="word" Index="2" Space="true" Writeable="false" Info="" Operation="">-i</Key>
+  		<Key Type="word" Index="3" Space="true" Writeable="true" Info="input path" Operation=""></Key>
+  		<Key Type="cmd0">pause</Key>
+  	</Function>
+  	<Function ID="SplitByFrames" Index="4" Distributed="false">
+  		<key Type="word" Index="1" Space="true" Writeable="false" Info="" Operation="FFmpeg"></key>
+  		<Key Type="word" Index="4" Space="true" Writeable="false" Info="" Operation="">-i</Key>
+  		<key Type="word" Index="5" Space="true" Writeable="true" Info="input path" Operation=""></key>
+  		<key Type="word" Index="6" Space="true" Writeable="true" Info="output format" Operation="">%d.jpg</key>
+  	</Function>
+  	<Function ID="ImageToVedio" Index="5" Distributed="false">
+  		<key Type="word" Index="1" Space="true" Writeable="false" Info="" Operation=""></key>
+  		<key Type="word" Index="2" Space="true" Writeable-"false" Info="" Operation=""></key>
+  	</Function>
+  </Functions>
+</DistributedEncoderMasterConfigVer.I>
