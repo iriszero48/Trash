@@ -16,7 +16,7 @@
 *.ino linguist-language=C
 *.xaml linguist-language=XML
 *.xml linguist-language=XML
-*.sql linguist-language=SQL
+*.sql linguist-language=SQLPL
 *.axml linguist-language=XML
 *.awk linguist-language=Awk
 *.hs linguist-language=Haskell
