@@ -1,14 +1,13 @@
 #include<stdio.h>
-#include<math.h>
 int main()
 {
-	int a, b;
-	double s;
-	scanf("%d%d", &a, &b);
-	for ( s = 0; a <= b; a+=1)
-	{
-		s += pow(a, 2) + 1.0 / a;
-	}
-	printf("sum = %.6f", s);
-	return 0;
+    int N,i,sign=-1;
+    float sum = 0;
+    scanf("%d",&N);
+    for(i = 1;i<=N;i++)
+    {
+        sum += (sign*=-1)*((float)i)/((float)(2*i-1));
+    }
+    printf("%.3f\n",sum);
+    return 0;
 }
