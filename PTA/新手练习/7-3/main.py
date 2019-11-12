@@ -1,0 +1,7 @@
+input()
+cin=list(map(int,input().split()))
+print(len([i for i in cin if i >= 90]),end=' ')
+print(len([i for i in cin if i >= 80 and i < 90]),end=' ')
+print(len([i for i in cin if i >= 70 and i < 80]),end=' ')
+print(len([i for i in cin if i >= 60 and i < 70]),end=' ')
+print(len([i for i in cin if i < 60]),end='')
