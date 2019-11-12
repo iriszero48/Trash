@@ -27,3 +27,4 @@
 *.wl linguist-language=Mathematica
 *.cu linguist-language=Cuda
 *.gradle linguist-language=Gradle
+*.shader linguist-language=ShaderLab
