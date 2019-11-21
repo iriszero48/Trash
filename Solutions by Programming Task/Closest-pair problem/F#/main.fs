@@ -1,3 +1,5 @@
+open System.Windows
+
 let ClosestPairs (points:Point []) =
     let n = points.Length - 1
     in seq {
