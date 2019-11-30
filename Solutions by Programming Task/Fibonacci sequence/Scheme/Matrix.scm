@@ -1,0 +1,18 @@
+(define (Fib x)
+  (define (matrix-exp mat exp)
+    (define (row*col row col)
+      (apply + (map * row col)))
+    (define (matrix-multiply m1 m2)
+      (map 
+       (lambda (row) 
+         (apply map (lambda col (row*col row col)) m2)) 
+       m1))
+    (define (square-matrix mat) (matrix-multiply mat mat))
+    (define (halve x) (/ x 2))
+    (define (dec x) (- x 1))
+    (cond ((= exp 1) mat)
+          ((even? exp) (square-matrix (matrix-exp mat (halve exp))))
+          (else (matrix-multiply mat (matrix-exp mat (dec exp))))))
+  (if (< x 10)
+      x
+      (list-ref (list-ref (matrix-exp '((1 1) (1 0)) (- x 1)) 0) 0)))
