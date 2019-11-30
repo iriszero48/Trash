@@ -1,0 +1,5 @@
+(define (Fib x)
+  (do ((i 0 (+ i 1))
+       (p 0 n)
+       (n 1 (+ p n)))
+    ((= i x) p)))
