@@ -1,18 +1,26 @@
 100 doors
 100 prisoners
 15 Puzzle Game
+15 Puzzle Game in 3D
 15 puzzle solver
+16 Puzzle Game
 2048
+21 Game
 24 game
 24 game/Solve
+3D
 4-rings or 4-squares puzzle
 9 billion names of God the integer
 99 Bottles of Beer
+A* search algorithm
 A+B
+ABC Problem
+AKS test for primes
+ASCII art diagram converter
+AVL tree
 Abbreviations, automatic
 Abbreviations, easy
 Abbreviations, simple
-ABC Problem
 Abelian sandpile model
 Abstract type
 Abundant odd numbers
@@ -23,8 +31,9 @@ Active Directory/Connect
 Active Directory/Search for a user
 Active object
 Add a variable to a class instance at runtime
+Addition chains
+Addition-chain exponentiation
 Address of a variable
-AKS test for primes
 Align columns
 Aliquot sequence classifications
 Almost prime
@@ -45,6 +54,8 @@ Approximate Equality
 Arbitrary-precision integers (included)
 Archimedean spiral
 Arena storage pool
+Arithmetic
+Arithmetic coding/As a generalized change of radix
 Arithmetic evaluation
 Arithmetic-geometric mean
 Arithmetic-geometric mean/Calculate Pi
@@ -54,11 +65,16 @@ Arithmetic/Rational
 Array concatenation
 Array length
 Arrays
+Aspect Oriented Programming
 Assertions
+Assertions in design by contract
 Associative array/Creation
 Associative array/Iteration
 Atomic updates
 Attractive numbers
+Audio Overlap Loop
+Audio frequency generator
+AudioAlarm
 Average loop length
 Averages/Arithmetic mean
 Averages/Mean angle
@@ -68,19 +84,27 @@ Averages/Mode
 Averages/Pythagorean means
 Averages/Root mean square
 Averages/Simple moving average
-AVL tree
 Babbage problem
+Bacon cipher
 Balanced brackets
 Balanced ternary
+Banker's algorithm
 Barnsley fern
+Base58Check encoding
 Base64 decode data
+Base64 encode data
+Basic language learning
+Bell numbers
 Benford's law
 Bernoulli numbers
 Best shuffle
+Bilinear interpolation
 Binary digits
 Binary search
 Binary strings
 Bioinformatics/Sequence mutation
+Bioinformatics/base count
+Birthday problem
 Bitcoin/address validation
 Bitcoin/public point to address
 Bitmap
@@ -96,13 +120,22 @@ Bitmap/Read an image through a pipe
 Bitmap/Write a PPM file
 Bitwise IO
 Bitwise operations
+Black Box
+Blackjack strategy
+Boids
 Boolean values
 Box the compass
 Brace expansion
+Brazilian numbers
 Break OO privacy
 Brownian tree
 Bulls and cows
 Bulls and cows/Player
+Burrows–Wheeler transform
+CRC-32
+CSV data manipulation
+CSV to HTML translation
+CUSIP
 Caesar cipher
 Calculating the value of e
 Calendar
@@ -113,6 +146,7 @@ Call a function in a shared library
 Call an object method
 Canny edge detector
 Cantor set
+Card shuffles
 Carmichael 3 strong pseudoprimes
 Cartesian product of two or more lists
 Case-sensitivity of identifiers
@@ -125,27 +159,44 @@ Chaocipher
 Chaos game
 Character codes
 Chat server
+Chebyshev coefficients
 Check Machin-like formulas
+Check input device is a terminal
+Check output device is a terminal
 Check that file exists
 Checkpoint synchronization
+Checksumcolor
+Checksums
+Chemical Calculator
+Chernick's Carmichael numbers
+Cheryl's Birthday
+Chess player
+Chess player/Move generation
+Chess player/Program options and user interface
+Chess player/Search and evaluation
 Chinese remainder theorem
 Chinese zodiac
 Cholesky decomposition
 Chowla numbers
 Church Numerals
+Cipolla's algorithm
 Circles of given radius through two points
 Classes
+Classic CS problems and programs
 Closest-pair problem
 Closures/Value capture
+Code segment unload
 Collections
 Color of a screen pixel
 Color quantization
+Color wheel
 Colour bars/Display
 Colour pinstripe/Display
 Colour pinstripe/Printer
 Combinations
 Combinations and permutations
 Combinations with repetitions
+Combinations with repetitions/Square Digit Chain
 Comma quibbling
 Command-line arguments
 Commatizing numbers
@@ -153,49 +204,65 @@ Comments
 Compare a list of strings
 Compare sorting algorithms' performance
 Compile-time calculation
+Compiler/ Verifying Syntax
 Compiler/AST interpreter
 Compiler/code generator
 Compiler/lexical analyzer
 Compiler/syntax analyzer
 Compiler/virtual machine interpreter
 Compound data type
+Compression
+Concurrency
 Concurrent computing
+Conditional loops
 Conditional structures
 Conjugate transpose
 Constrained genericity
 Constrained random points on a circle
+Constructive Solid Geometry
 Continued fraction
 Continued fraction/Arithmetic/Construct from rational number
+Continued fraction/Arithmetic/G(matrix NG, Contined Fraction N)
+Continued fraction/Arithmetic/G(matrix NG, Contined Fraction N1, Contined Fraction N2)
 Convert decimal number to rational
 Convert seconds to compound duration
 Convex hull
 Conway's Game of Life
 Copy a string
+Copy stdin to stdout
 Count in factors
 Count in octal
 Count occurrences of a substring
 Count the coins
 Cramer's rule
-CRC-32
 Create a file
 Create a file on magnetic tape
 Create a two-dimensional array at runtime
 Create an HTML table
 Create an object at a given address
-CSV data manipulation
-CSV to HTML translation
+Create an object/Native demonstration
 Cuban primes
 Cumulative standard deviation
 Currency
 Currying
-CUSIP
+Curve that touches three points
 Cut a rectangle
+Cycle detection
+DNS query
+Damm algorithm
+Data Encryption Standard
+Data Structures
+Database operations
+Date and time
 Date format
 Date manipulation
 Day of the week
+Days between dates
 De Bruijn sequences
 Deal cards for FreeCell
 Death Star
+Decimal floating point number to binary
+Decision tables
 Deconvolution/1D
 Deconvolution/2D+
 Deepcopy
@@ -212,14 +279,19 @@ Determine if a string is collapsible
 Determine if a string is numeric
 Determine if a string is squeezable
 Determine if only one instance is running
+Determine if two triangles overlap
+Dice game probabilities
 Digital root
 Digital root/Multiplicative digital root
+Digital signal processing
 Dijkstra's algorithm
 Dinesman's multiple-dwelling problem
 Dining philosophers
 Discordian date
+Display a linear combination
+Display an outline as a nested table
 Distributed programming
-DNS query
+Diversity prediction theorem
 Documentation
 Dot product
 Doubly-linked list/Definition
@@ -232,20 +304,26 @@ Draw a cuboid
 Draw a pixel
 Draw a rotating cube
 Draw a sphere
+Draw pixel 2
 Dutch national flag problem
 Dynamic variable names
+EKG sequence convergence
 Eban numbers
 Echo server
 Eertree
 Egyptian division
 Egyptian fractions
-EKG sequence convergence
 Element-wise operations
 Elementary cellular automaton
+Elementary cellular automaton/Infinite length
+Elementary cellular automaton/Random Number Generator
+Elliptic Curve Digital Signature Algorithm
+Elliptic curve arithmetic
 Emirp primes
 Empty directory
 Empty program
 Empty string
+Encryption
 Enforced immutability
 Entropy
 Entropy/Narcissist
@@ -263,40 +341,57 @@ Evolutionary algorithm
 Exceptions
 Exceptions/Catch an exception thrown in a nested call
 Executable library
-Execute a Markov algorithm
-Execute a system command
 Execute Brain****
+Execute CopyPasta Language
 Execute HQ9+
 Execute SNUSP
+Execute a Markov algorithm
+Execute a system command
 Exponentiation operator
 Exponentiation order
 Extend your language
 Extensible prime generator
+External sort
+Extract file extension
 Extreme floating point values
+FASTA format
+FTP
 Faces from a mesh
 Factorial
 Factorial base numbers indexing permutations of a collection
+Factorions
 Factors of a Mersenne number
 Factors of an integer
 Farey sequence
 Fast Fourier transform
-FASTA format
+Faulhaber's formula
+Faulhaber's triangle
+Feigenbaum constant calculation
+Fermat numbers
+Fibonacci heap
 Fibonacci n-step number sequences
 Fibonacci sequence
 Fibonacci word
 Fibonacci word/fractal
 File extension is in extensions list
+File handling
 File input/output
 File modification time
 File size
+File size distribution
 Filter
+Find URI in text
 Find common directory path
+Find duplicate files
+Find first and last set bit of a long integer
 Find largest left truncatable prime in a given base
 Find limit of recursion
 Find palindromic numbers in both binary and ternary bases
+Find the intersection of a line with a plane
 Find the intersection of two lines
 Find the last Sunday of each month
 Find the missing permutation
+Finite state machine
 First class environments
 First perfect square in base N with N unique digits
 First-class functions
@@ -306,6 +401,7 @@ Fixed length records
 FizzBuzz
 Flatten a list
 Flipping bits game
+Flow control
 Flow-control structures
 Floyd's triangle
 Floyd-Warshall algorithm
@@ -320,38 +416,57 @@ Four is the number of letters in the ...
 Fractal tree
 Fraction reduction
 Fractran
-FTP
+Free polyominoes enumeration
+French Republican calendar
 Function composition
 Function definition
 Function frequency
 Function prototype
 Functional coverage tree
+Functions and subroutines
 Fusc sequence
+GUI
+GUI component interaction
+GUI enabling/disabling of controls
+GUI/Maximum window dimensions
 Galton box animation
+Game engine
+Games
 Gamma function
 Gapful numbers
+Gauss-Jordan matrix inversion
 Gaussian elimination
 General FizzBuzz
+Generalised floating point addition
+Generalised floating point multiplication
 Generate Chess960 starting position
 Generate lower case ASCII alphabet
 Generate random chess position
 Generator/Exponential
 Generic swap
+Geometric Primitives
+Geometric Subtraction
+Geometric algebra
+Geometry
 Get system command output
 Globally replace text in several files
 Go Fish
+Gradient descent
+Graphics algorithms
 Gray code
 Grayscale image
 Greatest common divisor
 Greatest element of a list
 Greatest subsequential sum
+Greed
 Greyscale bars/Display
 Guess the number
 Guess the number/With feedback
 Guess the number/With feedback (player)
-GUI component interaction
-GUI enabling/disabling of controls
-GUI/Maximum window dimensions
+HTTP
+HTTPS
+HTTPS/Authenticated
+HTTPS/Client-authenticated
 Hailstone sequence
 Hamming numbers
 Handle a signal
@@ -369,6 +484,7 @@ Hello world/Text
 Hello world/Web server
 Here document
 Heronian triangles
+Hexapawn
 Hickerson series of almost integers
 Higher-order functions
 Hilbert curve
@@ -383,50 +499,64 @@ Horner's rule for polynomial evaluation
 Host introspection
 Hostname
 Hough transform
-HTTP
-HTTPS
-HTTPS/Authenticated
-HTTPS/Client-authenticated
 Huffman coding
 Humble numbers
 Hunt The Wumpus
 I before E except after C
+I'm a software engineer, get me out of here
+I.Q. Puzzle
 IBAN
+IPC via named pipe
+IRC gateway
+ISBN13 check digit
 Identity matrix
 Idiomatically determine all the characters that can be used for symbols
 Idiomatically determine all the lowercase and uppercase letters
 Image convolution
 Image noise
+Image processing
 Imaginary base numbers
+Implicit type conversion
 Include a file
 Increment a numerical string
 Index finite lists of positive integers
 Infinity
 Inheritance/Multiple
 Inheritance/Single
+Initialization
 Input loop
+Input/Output for Lines of Text
+Input/Output for Pairs of Numbers
 Integer comparison
 Integer overflow
+Integer roots
 Integer sequence
+Interactive Help
 Interactive programming
+Internet Protocol
 Intersecting Number Wheels
 Introspection
 Inverted index
 Inverted syntax
 Iterated digits squaring
+Iteration
+JSON
 Jaro distance
 Jensen's Device
 Jewels and Stones
 JortSort
 Josephus problem
+Joystick
 Joystick position
-JSON
 Julia set
 Jump anywhere
+Just in time processing on a character stream
 K-d tree
 K-means++ clustering
+Kahan summation
 Kaprekar numbers
 Kernighans large earthquake problem
+Keyboard Input
 Keyboard input/Flush the keyboard buffer
 Keyboard input/Keypress check
 Keyboard input/Obtain a Y or N response
@@ -444,6 +574,8 @@ Kolakoski sequence
 Kosaraju
 Kronecker product
 Kronecker product based fractals
+LU decomposition
+LZW compression
 Lah numbers
 Langton's ant
 Largest int from concatenated ints
@@ -451,6 +583,8 @@ Largest number divisible by its digits
 Last Friday of each month
 Last letter-first letter
 Latin Squares in reduced form
+Latin Squares in reduced form/Randomizing using Jacobson and Matthews’ Technique
+Launch rocket with countdown and acceleration in stdout
 Law of cosines - triples
 Leap year
 Least common multiple
@@ -458,16 +592,21 @@ Left factorials
 Leonardo numbers
 Letter frequency
 Levenshtein distance
+Levenshtein distance/Alignment
 Linear congruential generator
+Linux CPU utilization
 List comprehensions
+List rooted trees
 Literals/Floating point
 Literals/Integer
 Literals/String
+Logic
 Logical operations
 Long multiplication
 Long primes
-Longest common subsequence
 Longest Common Substring
+Longest common prefix
+Longest common subsequence
 Longest increasing subsequence
 Longest string challenge
 Look-and-say sequence
@@ -484,44 +623,51 @@ Loops/Infinite
 Loops/N plus one half
 Loops/Nested
 Loops/While
-Loops/with multiple ranges
 Loops/Wrong ranges
-LU decomposition
+Loops/with multiple ranges
 Lucas-Lehmer test
 Lucky and even lucky numbers
 Ludic numbers
 Luhn test of credit card numbers
 Lychrel numbers
-LZW compression
 MAC Vendor Lookup
+MD4
+MD5
+MD5/Implementation
 Machine code
 Mad Libs
+Magic 8-Ball
 Magic squares of doubly even order
 Magic squares of odd order
 Magic squares of singly even order
 Main step of GOST 28147-89
+Make a backup file
 Make directory path
 Man or boy test
 Mandelbrot set
 Map range
+Markov chain text generator
 Mastermind
-Matrix chain multiplication
+Mathematical operations
+Mathematics
 Matrix Digital Rain
+Matrix chain multiplication
 Matrix multiplication
 Matrix transposition
 Matrix-exponentiation operator
 Maximum triangle path sum
+Mayan calendar
 Mayan numerals
 Maze generation
 Maze solving
 McNuggets Problem
-MD4
-MD5
-MD5/Implementation
 Median filter
 Memory allocation
 Memory layout of a data structure
+Memory management
 Menu
+Mersenne primes
+Metallic ratios
 Metaprogramming
 Metered concurrency
 Metronome
@@ -530,15 +676,26 @@ Middle three digits
 Miller–Rabin primality test
 Mind boggling card trick
 Minesweeper game
+Minimal steps down to 1
+Modular arithmetic
 Modular exponentiation
 Modular inverse
+Modulinos
+Monads/List monad
+Monads/Maybe monad
+Monads/Writer monad
 Monte Carlo methods
+Montgomery reduction
 Monty Hall problem
+Morpion solitaire
 Morse code
+Most frequent k chars distance
 Mouse position
 Move-to-front algorithm
 Multi-dimensional array
+Multidimensional Newton-Raphson method
 Multifactorial
+Multiline shebang
 Multiple distinct objects
 Multiple regression
 Multiplication tables
@@ -546,20 +703,27 @@ Multiplicative order
 Multisplit
 Munchausen numbers
 Munching squares
+Musical scale
 Mutual recursion
 N'th
+N-body problem
 N-queens problem
 N-smooth numbers
+NYSIIS
 Named parameters
+Names to numbers
 Naming conventions
 Narcissist
 Narcissistic decimal number
+Native shebang
 Natural sorting
 Nautical bell
 Negative base numbers
 Nested function
 Nested templated data
+Networking and Web Interaction
 Nim Game
+Non parametric generators
 Non-continuous subsequences
 Non-decimal radices/Convert
 Non-decimal radices/Input
@@ -571,36 +735,48 @@ Null object
 Number names
 Number reversal game
 Numeric error propagation
+Numeric separator syntax
 Numerical and alphabetical suffixes
 Numerical integration
+Numerical integration/Adaptive Simpson's method
 Numerical integration/Gauss-Legendre Quadrature
+OLE Automation
+Object oriented
 Object serialization
 Odd word problem
+Old Russian measure of length
 Old lady swallowed a fly
-OLE Automation
 One of n lines in a file
 One-dimensional cellular automata
+One-time pad
 OpenGL
+OpenGL Pixel Shader
+OpenGL/Utah Teapot
 OpenWebNet Password
 Operator precedence
 Optional parameters
+Orbital elements
 Order disjoint list items
 Order two numerical lists
 Ordered Partitions
 Ordered words
 P-value correction
 Palindrome detection
+Palindromic gapful numbers
 Pangram checker
 Paraffins
 Parallel Brute Force
 Parallel calculations
 Parametric polymorphism
 Parametrized SQL statement
+Parse EBNF
 Parse an IP Address
+Parse command-line arguments
 Parsing/RPN calculator algorithm
 Parsing/RPN to infix conversion
 Parsing/Shunting-yard algorithm
 Partial function application
+Particle Swarm Optimization
 Partition an integer X into N primes
 Pascal matrix generation
 Pascal's triangle
@@ -612,8 +788,11 @@ Peaceful chess queen armies
 Peano curve
 Pell's equation
 Penney's game
+Penrose tiling
 Pentagram
+Pentomino tiling
 Percentage difference between images
+Perceptron
 Percolation/Bond percolation
 Percolation/Mean cluster density
 Percolation/Mean run density
@@ -621,29 +800,36 @@ Percolation/Site percolation
 Perfect numbers
 Perfect shuffle
 Perfect totient numbers
+Perlin noise
 Permutation test
 Permutations
 Permutations by swapping
+Permutations with repetitions
+Permutations with some identical elements
 Permutations/Derangements
 Permutations/Rank of a permutation
 Pernicious numbers
 Phrase reversals
 Pi
 Pick random element
+Pierpont primes
 Pig the dice game
 Pig the dice game/Player
 Pinstripe/Display
 Pinstripe/Printer
 Plasma effect
 Play recorded sounds
+Playfair cipher
 Playing cards
 Plot coordinate pairs
 Pointers and references
+Pointing devices
 Poker hand analyser
 Polymorphic copy
 Polymorphism
 Polynomial long division
 Polynomial regression
+Polynomial synthetic division
 Polyspiral
 Population count
 Power set
@@ -654,12 +840,18 @@ Prime conspiracy
 Prime decomposition
 Primes - allocate descendants to their ancestors
 Primorial numbers
+Print debugging statement
 Priority queue
 Probabilistic choice
 Problem of Apollonius
+Process SMIL directives in XML data
 Program name
 Program termination
+Programming environment operations
+Programming language concepts
+Proof
 Proper divisors
+Puzzles
 Pythagoras tree
 Pythagorean quadruples
 Pythagorean triples
@@ -669,78 +861,116 @@ Queue/Definition
 Queue/Usage
 Quickselect algorithm
 Quine
+RCRPG
+RIPEMD-160
+RPG Attributes Generator
+RSA code
+Railway circuit
+Ramanujan's constant
 Ramer-Douglas-Peucker line simplification
+Ramsey's theorem
+Random Latin Squares
 Random number generator (device)
 Random number generator (included)
 Random numbers
+Randomness
 Range consolidation
 Range expansion
 Range extraction
 Ranking methods
 Rare numbers
+Raster bars
 Rate counter
 Ray-casting algorithm
-RCRPG
 Read a configuration file
+Read a file character by character/UTF8
 Read a file line by line
 Read a specific line from a file
 Read entire file
+Readline interface
 Real constants and functions
 Recaman's sequence
 Record sound
+Recursion
+Recursive descent parser generator
 Reduced row echelon form
 Reflection/Get source
 Reflection/List methods
 Reflection/List properties
 Regular expressions
+Remote agent/Agent interface
+Remote agent/Agent logic
+Remote agent/Simulation
 Remove duplicate elements
 Remove lines from a file
 Rename a file
 Rendezvous
 Rep-string
+Repeat
 Repeat a string
+Resistance Calculator
+Resistance Network Calculator
 Resistor mesh
 Respond to an unknown method call
 Retrieve and search chat history
 Return multiple values
 Reverse a string
+Reverse the gender of a string
 Reverse words in a string
-RIPEMD-160
+Robots
 Rock-paper-scissors
 Roman numerals/Decode
 Roman numerals/Encode
 Roots of a function
 Roots of a quadratic function
 Roots of unity
+Rosetta Code related
 Rosetta Code/Count examples
 Rosetta Code/Find bare lang tags
 Rosetta Code/Find unimplemented tasks
 Rosetta Code/Fix code tags
+Rosetta Code/List authors of task descriptions
+Rosetta Code/Rank languages by number of users
 Rosetta Code/Rank languages by popularity
+Rosetta Code/Run examples
+Rosetta Code/Tasks sorted by average lines of code
+Rosetta Code/Tasks without examples
 Rot-13
-RPG Attributes Generator
-RSA code
+Routing algorithms
+Run as a daemon or service
 Run-length encoding
 Runge-Kutta method
 Runtime evaluation
 Runtime evaluation/In an environment
 S-Expressions
+SEDOLs
+SHA-1
+SHA-256
+SOAP
+SQL-based authentication
 Safe addition
+Safe mode
 Safe primes and unsafe primes
 Sailors, coconuts and a monkey problem
 Same Fringe
+Sattolo cycle
+Sciences
+Scope
 Scope modifiers
 Scope/Function names and labels
+Screen capture
 Search a list
 Search a list of records
 Secure temporary file
-SEDOLs
+Selective File Copy
 Self-describing numbers
+Self-hosting compiler
 Self-referential sequence
 Semiprime
 Semordnilap
 Send an unknown method call
 Send email
+Separate the house number from the street name
 Sequence of non-squares
 Sequence of primes by trial division
 Sequence of primorial primes
@@ -753,8 +983,6 @@ Set of real numbers
 Set puzzle
 Seven-sided dice from five-sided dice
 Sexy primes
-SHA-1
-SHA-256
 Shell one-liner
 Shoelace formula for polygonal area
 Short-circuit evaluation
@@ -766,25 +994,33 @@ Sierpinski pentagon
 Sierpinski triangle
 Sierpinski triangle/Graphical
 Sieve of Eratosthenes
+Signal handling
 Simple database
 Simple windowed application
 Simulate input/Keyboard
 Simulate input/Mouse
+Simulated annealing
+Sine wave
 Singleton
 Singly-linked list/Element definition
 Singly-linked list/Element insertion
+Singly-linked list/Element removal
 Singly-linked list/Traversal
 Sleep
 Smarandache prime-digital sequence
 Smith numbers
-SOAP
+Snake
+Snake And Ladder
 Sockets
+Software Engineering
 Sokoban
 Solve a Hidato puzzle
 Solve a Holy Knight's tour
 Solve a Hopido puzzle
 Solve a Numbrix puzzle
+Solve a Rubik's Cube
 Solve the no connection puzzle
+Solving coin problems
 Sort a list of object identifiers
 Sort an array of composite structures
 Sort an integer array
@@ -793,12 +1029,15 @@ Sort numbers lexicographically
 Sort stability
 Sort three variables
 Sort using a custom comparator
+Sorting
+Sorting Algorithms/Circle Sort
 Sorting algorithms/Bead sort
 Sorting algorithms/Bogosort
 Sorting algorithms/Bubble sort
 Sorting algorithms/Cocktail sort
 Sorting algorithms/Comb sort
 Sorting algorithms/Counting sort
+Sorting algorithms/Cycle sort
 Sorting algorithms/Gnome sort
 Sorting algorithms/Heapsort
 Sorting algorithms/Insertion sort
@@ -813,16 +1052,18 @@ Sorting algorithms/Shell sort
 Sorting algorithms/Sleep sort
 Sorting algorithms/Stooge sort
 Sorting algorithms/Strand sort
+Sorting algorithms/Tree sort on a linked list
 Soundex
 Sparkline in unicode
 Special characters
 Special variables
+Speech Recognition
 Speech synthesis
 Spelling of ordinal numbers
 Spinning rod animation/Text
 Spiral matrix
 Split a character string based on change of character
-SQL-based authentication
+Spoof game
 Square but not cube
 Square-free integers
 Stable marriage problem
@@ -830,19 +1071,24 @@ Stack
 Stack traces
 Stair-climbing puzzle
 Start from a main routine
+Starting a web browser
 State name puzzle
 Statistics/Basic
 Statistics/Normal distribution
 Stem-and-leaf plot
 Stern-Brocot sequence
+Stirling numbers of the first kind
+Stirling numbers of the second kind
 Straddling checkerboard
 Stream Merge
+Streams
 String append
 String case
 String comparison
 String concatenation
 String interpolation (included)
 String length
+String manipulation
 String matching
 String prepend
 Strip a set of characters from a string
@@ -852,14 +1098,18 @@ Strip control codes and extended characters from a string
 Strip whitespace from a string/Top and tail
 Strong and weak primes
 Subleq
+Subset sum problem
+Substitution Cipher
 Substring
 Substring/Top and tail
 Subtractive generator
 Successive prime differences
 Sudoku
+Suffix tree
 Suffixation of decimal numbers
-Sum and product of an array
 Sum and Product Puzzle
+Sum and product of an array
+Sum data type
 Sum digits of an integer
 Sum multiples of 3 and 5
 Sum of a series
@@ -873,11 +1123,17 @@ Sutherland-Hodgman polygon clipping
 Symmetric difference
 Synchronous concurrency
 System time
+Table creation
 Table creation/Postal addresses
 Take notes on the command line
+Talk:FizzBuzz
+Tamagotchi emulator
 Tarjan
 Taxicab numbers
+Teacup rim text
 Temperature conversion
+Temporal media
+Terminal control
 Terminal control/Clear the screen
 Terminal control/Coloured text
 Terminal control/Cursor movement
@@ -888,14 +1144,20 @@ Terminal control/Hiding the cursor
 Terminal control/Inverse video
 Terminal control/Positional read
 Terminal control/Preserve screen
+Terminal control/Restricted width positional input/No wrapping
+Terminal control/Restricted width positional input/With wrapping
 Terminal control/Ringing the terminal bell
 Terminal control/Unicode output
 Ternary logic
 Test a function
 Test integerness
+Tetris
+Text between
+Text processing
 Text processing/1
 Text processing/2
 Text processing/Max licenses in use
+Text to HTML
 Textonyms
 The ISAAC Cipher
 The Name Game
@@ -904,50 +1166,68 @@ Thiele's interpolation formula
 Thue-Morse
 Tic-tac-toe
 Time a function
+Time-based One-time Password Algorithm
 Tokenize a string
 Tokenize a string with escaping
 Tonelli-Shanks algorithm
 Top rank per group
 Topic variable
 Topological sort
+Topological sort/Extracted top item
 Topswops
 Total circles area
 Totient function
 Towers of Hanoi
 Trabb Pardo–Knuth algorithm
+Transportation problem
+Tree datastructures
 Tree traversal
 Trigonometric functions
 Truncatable primes
 Truncate a file
 Truth table
 Twelve statements
-Ulam spiral (for primes)
-Unbias a random generator
-Undefined values
-Unicode strings
-Unicode variable names
-Universal Turing machine
-Unix/ls
-Update a configuration file
+Two Sum
+Type detection
+UPC
 URL decoding
 URL encoding
 URL parser
+UTF-8 encode and decode
+Ukkonen’s Suffix Tree Construction
+Ulam spiral (for primes)
+Unbias a random generator
+Undefined values
+Unicode polynomial equation
+Unicode strings
+Unicode variable names
+Unit testing
+Universal Turing machine
+Unix/ls
+Unprimeable numbers
+Untrusted environment
+Update a configuration file
 Use another language to call a function
+User defined pipe and redirection operators
 User input/Graphical
 User input/Text
-UTF-8 encode and decode
+Using a Speech engine to highlight words
+Using the Meetup.com API
+VList
 Validate International Securities Identification Number
 Vampire number
-Van der Corput sequence
 Van Eck sequence
+Van der Corput sequence
 Variable size/Get
 Variable size/Set
 Variable-length quantity
 Variables
 Variadic function
+Vector
 Vector products
 Verify distribution uniformity/Chi-squared test
 Verify distribution uniformity/Naive
+Vibrating rectangles
 Video display modes
 Vigenère cipher
 Vigenère cipher/Cryptanalysis
@@ -957,12 +1237,17 @@ Voronoi diagram
 Walk a directory/Non-recursively
 Walk a directory/Recursively
 Water collected between towers
+Waveform analysis/Doh ray me
+Waveform analysis/Top and tail
+Weather Routing
 Web scraping
 Weird numbers
+Welch's t-test
 Window creation
 Window creation/X11
 Window management
 Wireworld
+Word break problem
 Word frequency
 Word search
 Word wrap
@@ -971,11 +1256,13 @@ Write entire file
 Write float arrays to a text file
 Write language name in 3D ASCII
 Write to Windows event log
-Xiaolin Wu's line algorithm
+XML
+XML Validation
 XML/DOM serialization
 XML/Input
 XML/Output
 XML/XPath
+Xiaolin Wu's line algorithm
 Y combinator
 Yahoo! search interface
 Yin and yang
