@@ -1,4 +1,3 @@
-
 open System
 open System.Text
 open System.IO
@@ -24,21 +23,19 @@ module Path85 =
         |> Array.reduce (@)
         |> Seq.map (Bind2nd Seq.item Table >> ToString)
         |> String.concat ""
-        |> fun x -> x.Substring(0, x.Length - (4 - lastLen))
+        |> fun x -> x.Substring(0, x.Length - (4 - lastLen)) + "h"
         
-    let rec Decode (data:string) =
-        try
-            let lastLen = match data.Length % 5 with 0 -> 5 | x -> x
-            let padLen = data.Length / 5 * 5 + match lastLen with 5 -> 0 | _ -> 5
-            data.PadRight(padLen, '~').ToCharArray()
-            |> Array.chunkBySize 5
-            |> Array.map (Array.map Table.IndexOf)
-            |> Array.map (Array.mapi (fun i x -> (uint32)x * pown 85u (4 - i)) >> Array.sum)
-            |> Array.map (fun x -> Array.init 4 (fun i -> x >>> ((3 - i) * 8) &&& 0xffu |> byte))
-            |> Array.reduce Array.append
-            |> Array.take ((padLen / 5) * 4 - (5 - lastLen))
-        with
-        | _ -> Decode(data + ".")
+    let rec Decode (data_:string) =
+        let data = data_.Substring(0, data_.Length - 1)
+        let lastLen = match data.Length % 5 with 0 -> 5 | x -> x
+        let padLen = data.Length / 5 * 5 + match lastLen with 5 -> 0 | _ -> 5
+        data.PadRight(padLen, '~').ToCharArray()
+        |> Array.chunkBySize 5
+        |> Array.map (Array.map Table.IndexOf)
+        |> Array.map (Array.mapi (fun i x -> (uint32)x * pown 85u (4 - i)) >> Array.sum)
+        |> Array.map (fun x -> Array.init 4 (fun i -> x >>> ((3 - i) * 8) &&& 0xffu |> byte))
+        |> Array.reduce Array.append
+        |> Array.take ((padLen / 5) * 4 - (5 - lastLen))
 
 let Interactive f =
     while true do
@@ -61,8 +58,8 @@ let RenameDirectories func =
         Computer().FileSystem.RenameDirectory(x, r)
         Console.WriteLine(r))
 
-let (Encode:string -> string) = Encoding.Default.GetBytes >> Path85.Encode
-let (Decode:string -> string) = Encoding.Default.GetString << Path85.Decode
+let (Encode:string -> string) = Encoding.UTF8.GetBytes >> Path85.Encode
+let (Decode:string -> string) = Encoding.UTF8.GetString << Path85.Decode
 
 let EncodeFiles = Directory.GetFiles >> RenameFiles Encode
 let DecodeFiles = Directory.GetFiles >> RenameFiles Decode
@@ -109,53 +106,3 @@ let main argv =
         eprintfn "    f/d/fd/s -> file/directory/file&directory/string"
         eprintfn "    r        -> recursive"
     0
-
-    (*
-open System
-open System.Text
-open System.IO
-open Microsoft.VisualBasic.Devices
-
-let (|>|>) x f = f x |> ignore; x
-
-let SwapKV map:Map<'b,'a> = Map.fold (fun m key value -> m.Add(value,key)) Map.empty map
-
-let Replace (table:Map<char,char>) = String.map (fun x -> if table.ContainsKey x then table.[x] else x)
-
-let RenameFiles f =
-    Seq.iter (fun (x:string) ->
-        Console.Write(x + "=>")
-        let r = f << Path.GetFileName <| x
-        Computer().FileSystem.RenameFile(x, r)
-        Console.WriteLine(r))
-
-let table = Map.empty.Add('+', ' ').Add('/', '(').Add('=', ')')
-
-let Interactive f =
-    while true do
-        Console.Write("<-")
-        let r:string = Console.ReadLine() |> f
-        Console.Write("->")
-        Console.WriteLine(r)
-
-let (Encode:string -> string) = Encoding.Default.GetBytes >> Array.map ((^^^) 9uy) >> Convert.ToBase64String >> Replace table
-
-let (Decode:string -> string) = Encoding.Default.GetString << Array.map ((^^^) 9uy) << Convert.FromBase64String << Replace (SwapKV table)
-
-let EncodeFiles = Directory.GetFiles >> RenameFiles Encode
-
-let DecodeFiles = Directory.GetFiles >> RenameFiles Decode
-
-[<EntryPoint>]
-let main argv = 
-    match argv.Length with
-    | 1 when argv.[0] = "es" -> Interactive Encode
-    | 1 when argv.[0] = "ds" -> Interactive Decode
-    | 2 when argv.[0] = "ef" -> argv.[1] |> EncodeFiles
-    | 2 when argv.[0] = "df" -> argv.[1] |> DecodeFiles
-    | _ ->
-        eprintfn "[ef|df|ed|dd|efd|dfd|efr|dfr|edr|ddr|efdr|dfdr|es|ds] [path]"
-        eprintfn "    e/d      -> encode/decode"
-        eprintfn "    f/d/fd/s -> file/directory/file&directory/string"
-        eprintfn "    r        -> recursive"
-    0*)
