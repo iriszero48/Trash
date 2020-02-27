@@ -1,12 +1,10 @@
 open System
 open System.IO
-open System.Linq
 
 [<EntryPoint>]
-let main argv = 
-    "task.txt"
-    |> File.ReadAllLines
-    |> (fun x -> x.OrderBy(fun _ -> Guid.NewGuid()).ToList().First())
-    |> Console.WriteLine
+let main _ = 
+    let rand = new Random(DateTime.Now.ToString().GetHashCode())
+    let lst = File.ReadAllLines("task.txt")
+    Console.WriteLine(lst.[rand.Next(0, lst.Length)])
     Console.ReadLine() |> ignore
     0
