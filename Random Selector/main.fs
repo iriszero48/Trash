@@ -1,26 +1,30 @@
 open System.IO
-open System.Linq
 open System
-open Microsoft.WindowsAPICodePack.Taskbar
-open System.Drawing
 open System.Diagnostics
-open System.Security.Cryptography
+open System.Collections.Generic
 
 let (|>|>) x f = f x |> ignore; x
 
+let rec getAllFiles dir =
+    seq {
+        yield!  Directory.EnumerateFiles(dir) 
+        for d in Directory.EnumerateDirectories(dir) do
+            yield! getAllFiles d
+    }
+    
 [<EntryPoint>]
 let main argv = 
     match argv.Length with
     | 1 ->
-        let rng = new RNGCryptoServiceProvider()
-        let arr = Array.create 8 0uy
-        argv.[0]
-        |> Directory.GetFiles
-        |> (fun x -> x.OrderBy(fun _ -> rng.GetBytes(arr); BitConverter.ToUInt64(arr, 0)).ToList().[0])
-        |>|> (fun x -> TaskbarManager.Instance.SetOverlayIcon(Icon.ExtractAssociatedIcon(x), ""))
-        |>|> Console.WriteLine
-        |>|> (fun _ -> Console.ReadLine())
-        |> (fun x -> Process.Start(x).Start())
-        |> ignore
+        let lst = new List<string>()
+        let rand = new Random(DateTime.Now.ToString().GetHashCode())
+        argv.[0] |> getAllFiles |> Seq.iter (fun x -> lst.Add(x))
+        while lst.Count > 0 do
+            let i = rand.Next(0, lst.Count)
+            let p = lst.[i]
+            Console.WriteLine p
+            try Process.Start(p).Start() |> ignore with | _ -> ()
+            lst.RemoveAt i
+            Console.ReadLine() |> ignore
     | _ -> ()
     0
