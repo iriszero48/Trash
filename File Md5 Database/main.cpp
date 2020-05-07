@@ -78,6 +78,7 @@ Usage: command [options]
 };
 
 #pragma region MD5
+
 // see https://github.com/php/php-src/blob/master/ext/standard/md5.c
 
 #define F(x, y, z)			((z) ^ ((x) & ((y) ^ (z))))
@@ -344,6 +345,8 @@ std::string Md5File(const NativeStringType& path)
 
 #pragma region TupleSerialization
 
+// see https://github.com/Sydius/serialize-tuple/blob/master/serialize_tuple.h
+
 namespace boost::serialization
 {
 	template <uint32_t N>
@@ -378,8 +381,6 @@ namespace boost::serialization
 
 #pragma endregion 
 
-// see https://github.com/Sydius/serialize-tuple/blob/master/serialize_tuple.h
-
 std::string FileLastModified(const NativeStringType& path)
 {
 	try
@@ -389,7 +390,6 @@ std::string FileLastModified(const NativeStringType& path)
 		if (lwt <= 0)
 		{
 			LogErr(path.c_str(), "get last_write_time() failed.");
-			//fwprintf(stderr, L"    %s: get last_write_time() failed.\n", path.c_str());
 			return "";
 		}
 		oss << std::put_time(static_cast<const tm*>(std::localtime(static_cast<time_t const*>(&lwt))), "%F %T");
@@ -417,8 +417,6 @@ void FileMd5DatabaseBuilder(const std::string& deviceName, const std::string& pa
 			{
 				if (errorCode != nonErrorCode)
 				{
-					//fprintf(stderr, "    %s: %s\n", file->path().native().c_str(), errorCode.message().c_str());
-					//fwprintf(stderr, L"    %s: %hs\n", file->path().native().c_str(), errorCode.message().c_str());
 					LogErr(file->path().native().c_str(), errorCode.message().c_str());
 					errorCode.clear();
 					continue;
@@ -443,8 +441,6 @@ void FileMd5DatabaseBuilder(const std::string& deviceName, const std::string& pa
 						const auto modificationTime = FileLastModified(nativePath);
 						fmd.insert(KV(fullPath, std::make_tuple(md5, size, FileLastModified(file->path().native()))));
 						if (logOutput) Log(file->path().native().c_str(), md5.c_str(), size, modificationTime.c_str());
-						//wprintf(L"<%s,<%hs,%lld,%hs>>\n", file->path().native().c_str(), md5.c_str(), size, modificationTime.c_str());
-						//printf("<%s,<%s,%lld>>\n", fullPath.c_str(), md5.c_str(), size);
 					}
 					catch (const std::exception& e)
 					{
@@ -463,58 +459,11 @@ void FileMd5DatabaseBuilder(const std::string& deviceName, const std::string& pa
 		}
 		queue.pop_front();
 	}
-	/*
-	//try
-	//{
-		std::error_code errorCode;
-		const std::error_code nonErrorCode;
-
-		//for (auto& file : std::filesystem::recursive_directory_iterator(std::filesystem::path(path),
-		//                                                                std::filesystem::directory_options::
-		//                                                                skip_permission_denied, errorCode))
-		for (std::filesystem::recursive_directory_iterator file(std::filesystem::path(path), std::filesystem::directory_options::skip_permission_denied, errorCode), end; file != end;)
-		{
-			try
-			{
-				if (errorCode != nonErrorCode)
-				{
-					fprintf(stderr, "    %s\n", errorCode.message().c_str());
-					file.pop();
-					errorCode.clear();
-					continue;
-				}
-				if (file->is_regular_file())
-				{
-					const auto fullPath = deviceName + ":" + file->path().u8string();
-					const auto md5 = Md5File(file->path().native());
-					const auto size = file->file_size();
-					fmd.insert(KV(fullPath, std::make_tuple(md5, size)));
-					wprintf(L"<%s,<%hs,%lld>>\n", file->path().native().c_str(), md5.c_str(), size);
-					//printf("<%s,<%s,%lld>>\n", fullPath.c_str(), md5.c_str(), size);
-				}
-
-			}
-			catch (std::system_error& e)
-			{
-
-				fprintf(stderr, "    %s\n", e.what());
-				//fprintf(stderr, "    %s\n", e.what());
-			}
-			++file;
-		}
-	//}
-	//catch (std::filesystem::filesystem_error& e)
-	//{
-	//	auto a = e.path2();
-	//	fwprintf(stderr, L"in %s %s\n\t%hs", e.path1().native().c_str(), e.path2().native().c_str(), e.what());
-	//	//fprintf(stderr, "in %s %s\n\t%s", e.path1().u8string().c_str(), e.path2().u8string().c_str(), boost::locale::conv::to_utf<char>(e.what(), "GB2312").c_str());
-	//}*/
 }
 
 void Serialization(Database& fmd, const std::string& databasePath)
 {
 	std::ofstream dbFile(databasePath, std::ios::binary);
-	//boost::archive::text_oarchive db(dbFile);
 	boost::archive::binary_oarchive db(dbFile);
 	db << fmd;
 	dbFile.close();
@@ -523,7 +472,6 @@ void Serialization(Database& fmd, const std::string& databasePath)
 void Deserialization(Database& fmd, const std::string& databasePath)
 {
 	std::ifstream dbFile(databasePath, std::ios::binary);
-	//boost::archive::text_iarchive db(dbFile);
 	boost::archive::binary_iarchive db(dbFile);
 	db >> fmd;
 	dbFile.close();
