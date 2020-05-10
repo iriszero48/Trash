@@ -464,18 +464,34 @@ void FileMd5DatabaseBuilder(const std::string& deviceName, const std::string& pa
 
 void Serialization(Database& fmd, const std::string& databasePath)
 {
-	std::ofstream dbFile(databasePath, std::ios::binary);
-	boost::archive::binary_oarchive db(dbFile);
-	db << fmd;
-	dbFile.close();
+	try
+	{
+		std::ofstream dbFile(databasePath, std::ios::binary);
+		boost::archive::binary_oarchive db(dbFile);
+		db << fmd;
+		dbFile.close();
+	}
+	catch (const std::exception& e)
+	{
+		fprintf(stderr, Line":%s:%s\n", databasePath.c_str(), e.what());
+		exit(EXIT_FAILURE);
+	}
 }
 
 void Deserialization(Database& fmd, const std::string& databasePath)
 {
-	std::ifstream dbFile(databasePath, std::ios::binary);
-	boost::archive::binary_iarchive db(dbFile);
-	db >> fmd;
-	dbFile.close();
+	try
+	{
+		std::ifstream dbFile(databasePath, std::ios::binary);
+		boost::archive::binary_iarchive db(dbFile);
+		db >> fmd;
+		dbFile.close();
+	}
+	catch (const std::exception& e)
+	{
+		fprintf(stderr, Line":%s:%s\n", databasePath.c_str(), e.what());
+		exit(EXIT_FAILURE);
+	}
 }
 
 void FileMd5DatabaseQuery(Database& fmd, const std::string& queryMethod, const std::string& queryData, const std::string& keyword)
@@ -552,7 +568,7 @@ int main(int argc, char* argv[])
 				const std::string deviceName = argv[3];
 				const std::string rootPath = argv[4];
 				const std::string logOutput = argc == 6 ? argv[5] : "true";
-				if (std::filesystem::exists(databaseFilePath)) Deserialization(FileMd5Database, argv[3]);
+				if (std::filesystem::exists(databaseFilePath)) Deserialization(FileMd5Database, databaseFilePath);
 #if (defined _WIN32 || defined _WIN64)
 				setlocale(LC_ALL, "");
 #endif
