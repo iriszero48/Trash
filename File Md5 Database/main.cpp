@@ -66,13 +66,13 @@ class ParameterError final : public std::exception
 public:
 	[[nodiscard]] char const* what() const noexcept override
 	{
-		return
+		return " " __FILE__ ":" Line " " __DATE__ " " __TIME__ " " __FUNCSIG__
 			R"(
 Parameter Error
-Usage: command [options]
-	build deviceName databaseFilePath rootPath [logOutput[default:true|false]]
-	query queryMethod[contain|startWith|regex] queryData[path|md5|size|fileModificationTime] databaseFilePath keyword [limit(default:100))]
-	concat targetDatabaseFile sourceDatabaseFile1 sourceDatabaseFile2 [sourceDatabaseFile...]
+Usage: databaseFilePath command [options]
+	build deviceName rootPath [logOutput[default:true|false]]
+	query queryMethod[contain|startWith|regex] queryData[path|md5|size|fileModificationTime] keyword [limit(default:100))]
+	concat sourceDatabaseFile1 sourceDatabaseFile2 [sourceDatabaseFile...]
 )";
 	}
 };
@@ -387,7 +387,7 @@ std::string FileLastModified(const NativeStringType& path)
 	{
 		std::ostringstream oss{};
 		const auto lwt = last_write_time(boost::filesystem::path(path));
-		if (lwt <= 0)
+		if (lwt < 0)
 		{
 			LogErr(path.c_str(), "get last_write_time() failed.");
 			return "";
@@ -513,21 +513,42 @@ void FileMd5DatabaseQuery(Database& fmd, const std::string& queryMethod, const s
 	else if (queryMethod == "regex" && queryData == "path") RegexSearch(pair->first)
 	else if (queryMethod == "regex" && queryData == "md5") RegexSearch(std::get<0>(pair->second))
 	else if (queryMethod == "regex" && queryData == "fileModificationTime") RegexSearch(std::get<2>(pair->second))
+	else if (queryMethod == "eq" && queryData == "md5&size")
+	{
+		std::map<std::string, uint64_t> md5 {};
+		for (auto& pair : fmd)
+		{
+			const auto m = std::get<0>(pair.second);
+			const auto s = std::get<1>(pair.second);
+			if (!m.empty() && s != 0)
+			{
+				if (md5.find(m) == md5.end())
+				{
+					md5.insert(std::make_pair(m, s));
+				}
+				else
+				{
+					if (md5[m] != s)
+					{
+						printf("<%s,<%s,%lld,%s>>\n", pair.first.c_str(), std::get<0>(pair.second).c_str(), std::get<1>(pair.second), std::get<2>(pair.second).c_str());
+					}
+				}
+			}
+		}
+	}
 }
 
-// g++ FileMd5Database.cpp -o FileMd5Database.out -std=c++17 -lboost_serialization -lboost_locale -lboost_filesystem -fopenmp -lboost_system -O2
-// g++ FileMd5Database.cpp -o FileMd5Database.out -std=c++17 -l:libboost_serialization.a -l:libboost_locale.a -l:libboost_filesystem.a -fopenmp -l:libboost_system.a -O2
 int main(int argc, char* argv[])
 {
 	try
 	{
 		if (argc >= 5)
 		{
-			const std::string command = argv[1];
+			const std::string databaseFilePath = argv[1];
+			const std::string command = argv[2];
 			if (command == "build" && argc <= 6)
 			{
-				const std::string deviceName = argv[2];
-				const std::string databaseFilePath = argv[3];
+				const std::string deviceName = argv[3];
 				const std::string rootPath = argv[4];
 				const std::string logOutput = argc == 6 ? argv[5] : "true";
 				if (std::filesystem::exists(databaseFilePath)) Deserialization(FileMd5Database, argv[3]);
@@ -539,12 +560,12 @@ int main(int argc, char* argv[])
 			}
 			else if (command == "query" && argc >= 6 && argc <= 7)
 			{
-				const std::string queryMethod = argv[2];
-				const std::string queryData = argv[3];
-				const std::string databaseFilePath = argv[4];
+				const std::string queryMethod = argv[3];
+				const std::string queryData = argv[4];
 				const std::string keyword = argv[5];
 				const auto limit = argc == 7 ? std::strtoull(argv[6], &argv[6], 10) : 100;
 				Deserialization(FileMd5Database, databaseFilePath);
+				printf("%lld\n", FileMd5Database.size());
 
 #if (defined _WIN32 || defined _WIN64)
 				system("chcp 65001");
@@ -554,7 +575,6 @@ int main(int argc, char* argv[])
 			}
 			else if (command == "concat")
 			{
-				const std::string databaseFilePath = argv[2];
 				for (auto i = 3; i < argc; ++i)
 				{
 					Database temp{};
@@ -573,14 +593,11 @@ int main(int argc, char* argv[])
 			throw ParameterError();
 		}
 	}
-	catch (const ParameterError& pe)
-	{
-		fprintf(stderr, Line":%s\n", pe.what());
-		exit(EXIT_FAILURE);
-	}
 	catch (const std::exception& e)
 	{
 		fprintf(stderr, Line":%s\n", e.what());
 		exit(EXIT_FAILURE);
 	}
 }
+// g++ FileMd5Database.cpp -o FileMd5Database.out -std=c++17 -lboost_serialization -lboost_locale -lboost_filesystem -fopenmp -lboost_system -O2
+// g++ FileMd5Database.cpp -o FileMd5Database.out -std=c++17 -l:libboost_serialization.a -l:libboost_locale.a -l:libboost_filesystem.a -fopenmp -l:libboost_system.a -O2
