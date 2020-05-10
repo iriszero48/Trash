@@ -66,7 +66,7 @@ class ParameterError final : public std::exception
 public:
 	[[nodiscard]] char const* what() const noexcept override
 	{
-		return " " __FILE__ ":" Line " " __DATE__ " " __TIME__ " " __FUNCSIG__
+		return " " __FILE__ ":" Line " " __DATE__ " " __TIME__
 			R"(
 Parameter Error
 Usage: databaseFilePath command [options]
