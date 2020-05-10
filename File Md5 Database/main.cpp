@@ -1,4 +1,5 @@
 #include <cstdint>
+#include <cinttypes>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -49,7 +50,7 @@
 
 #define Line ToString(__LINE__)
 
-#define Log(...) LogFunc(FormatString"<%s,<" StringFormatChar ",%lld," StringFormatChar ">>\n", __VA_ARGS__)
+#define Log(...) LogFunc(FormatString"<%s,<" StringFormatChar ",%" PRIu64 "," StringFormatChar ">>\n", __VA_ARGS__)
 #define LogErr(...) LogErrFunc(stderr, FormatString"    %s(" Line "): " StringFormatChar "\n", __VA_ARGS__)
 
 #define FileOpen(path, mode) FileOpenFunc(path, FormatString"" mode)
@@ -440,7 +441,7 @@ void FileMd5DatabaseBuilder(const std::string& deviceName, const std::string& pa
 						}
 						const auto modificationTime = FileLastModified(nativePath);
 						fmd.insert(KV(fullPath, std::make_tuple(md5, size, FileLastModified(file->path().native()))));
-						if (logOutput) Log(file->path().native().c_str(), md5.c_str(), size, modificationTime.c_str());
+						if (logOutput) Log(file->path().native().c_str(), md5.c_str(), static_cast<uint64_t>(size), modificationTime.c_str());
 					}
 					catch (const std::exception& e)
 					{
@@ -494,7 +495,7 @@ void FileMd5DatabaseQuery(Database& fmd, const std::string& queryMethod, const s
 			const auto data = value;\
 			if (judge)\
 			{\
-				printf("<%s,<%s,%lld,%s>>\n", pair->first.c_str(), std::get<0>(pair->second).c_str(), std::get<1>(pair->second), std::get<2>(pair->second).c_str());\
+				printf("<%s,<%s,%" PRIu64 ",%s>>\n", pair->first.c_str(), std::get<0>(pair->second).c_str(), std::get<1>(pair->second), std::get<2>(pair->second).c_str());\
 			}\
 		}\
 	}\
@@ -530,7 +531,7 @@ void FileMd5DatabaseQuery(Database& fmd, const std::string& queryMethod, const s
 				{
 					if (md5[m] != s)
 					{
-						printf("<%s,<%s,%lld,%s>>\n", pair.first.c_str(), std::get<0>(pair.second).c_str(), std::get<1>(pair.second), std::get<2>(pair.second).c_str());
+						printf("<%s,<%s,%" PRIu64 ",%s>>\n", pair.first.c_str(), std::get<0>(pair.second).c_str(), std::get<1>(pair.second), std::get<2>(pair.second).c_str());
 					}
 				}
 			}
@@ -565,7 +566,7 @@ int main(int argc, char* argv[])
 				const std::string keyword = argv[5];
 				const auto limit = argc == 7 ? std::strtoull(argv[6], &argv[6], 10) : 100;
 				Deserialization(FileMd5Database, databaseFilePath);
-				printf("%lld\n", FileMd5Database.size());
+				printf("%" PRIu64 "\n", static_cast<uint64_t>(FileMd5Database.size()));
 
 #if (defined _WIN32 || defined _WIN64)
 				system("chcp 65001");
