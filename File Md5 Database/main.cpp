@@ -58,8 +58,8 @@
 
 #define FileOpen(path, mode) FileOpenFunc(path, FormatString"" mode)
 
-using oDefaultFormat = boost::archive::text_oarchive;
-using iDefaultFormat = boost::archive::text_iarchive;
+using oDefaultFormat = boost::archive::binary_oarchive;
+using iDefaultFormat = boost::archive::binary_iarchive;
 
 using K = std::string;
 using V = std::tuple<std::string, uint64_t, std::string>;
@@ -77,12 +77,12 @@ public:
 			R"(
 Parameter Error
 Usage: databaseFilePath command [options]
-	build deviceName rootPath [logOutput[default:true|false]]
-	query queryMethod[contain|startWith|regex] queryData[path|md5|size|fileModificationTime] keyword [limit(default:100))]
-	concat sourceDatabaseFile1 sourceDatabaseFile2 [sourceDatabaseFile...]
+	build deviceName rootPath [format[binary|text]] [logOutput[default:true|false]]
+	query queryMethod[contain|startWith|regex] queryData[path|md5|size|fileModificationTime] keyword [format[binary|text]] [limit(default:100))]
+	concat format[binary|text] sourceDatabaseFile1 sourceDatabaseFile2 [sourceDatabaseFile...]
 	convert destFormat[text|binary] sourceFormat[text|binary] sourceDatabaseFile
 
-default format: text
+default format: binary
 )";
 	}
 };
@@ -517,6 +517,30 @@ void Deserialization(Database& fmd, const std::string& databasePath)
 #define SerializationBinary Serialization<boost::archive::binary_oarchive>
 #define DeserializationBinary Deserialization<boost::archive::binary_iarchive>
 
+void Serialization(Database& fmd, const std::string& databasePath, const std::string& format)
+{
+	if (format == "text")
+	{
+		SerializationText(FileMd5Database, databasePath);
+	}
+	else
+	{
+		Serialization(FileMd5Database, databasePath);
+	}
+}
+
+void Deserialization(Database& fmd, const std::string& databasePath, const std::string& format)
+{
+	if (format == "text")
+	{
+		DeserializationText(FileMd5Database, databasePath);
+	}
+	else
+	{
+		Deserialization(FileMd5Database, databasePath);
+	}
+}
+
 #pragma endregion
 
 void FileMd5DatabaseQuery(Database& fmd, const std::string& queryMethod, const std::string& queryData, const std::string& keyword)
@@ -582,11 +606,8 @@ void FileMd5DatabaseQuery(Database& fmd, const std::string& queryMethod, const s
 
 void FormatConvert(Database& fmd, const std::string& destFormat, const std::string& databaseFilePath, const std::string& sourceFormat, const std::string& sourceDatabaseFile)
 {
-	if (sourceFormat == "binary") DeserializationBinary(fmd, sourceDatabaseFile);
-	else DeserializationText(fmd, sourceDatabaseFile);
-
-	if (destFormat == "binary") SerializationBinary(fmd, databaseFilePath);
-	else SerializationText(fmd, databaseFilePath);
+	Deserialization(fmd, sourceDatabaseFile, sourceFormat);
+	Serialization(fmd, databaseFilePath, destFormat);
 }
 
 int main(int argc, char* argv[])
@@ -601,21 +622,25 @@ int main(int argc, char* argv[])
 			{
 				const std::string deviceName = argv[3];
 				const std::string rootPath = argv[4];
-				const std::string logOutput = argc == 6 ? argv[5] : "true";
-				if (std::filesystem::exists(databaseFilePath)) Deserialization(FileMd5Database, databaseFilePath);
+				const std::string format = argc == 6 ? argv[5] : "";
+				const std::string logOutput = argc == 7 ? argv[6] : "true";
+				if (std::filesystem::exists(databaseFilePath)) Deserialization(FileMd5Database, databaseFilePath, format);
+
 #if (defined _WIN32 || defined _WIN64)
 				setlocale(LC_ALL, "");
 #endif
+				
 				FileMd5DatabaseBuilder(deviceName, rootPath, FileMd5Database, logOutput == "true");
-				Serialization(FileMd5Database, databaseFilePath);
+				Serialization(FileMd5Database, databaseFilePath, format);
 			}
 			else if (command == "query" && argc >= 6 && argc <= 7)
 			{
 				const std::string queryMethod = argv[3];
 				const std::string queryData = argv[4];
 				const std::string keyword = argv[5];
-				const auto limit = argc == 7 ? std::strtoull(argv[6], &argv[6], 10) : 100;
-				Deserialization(FileMd5Database, databaseFilePath);
+				const std::string format = argc == 7 ? argv[6] : "";
+				const auto limit = argc == 8 ? std::strtoull(argv[7], &argv[7], 10) : 100;
+				Deserialization(FileMd5Database, databaseFilePath, format);
 				printf("%" PRIu64 "\n", static_cast<uint64_t>(FileMd5Database.size()));
 
 #if (defined _WIN32 || defined _WIN64)
@@ -626,13 +651,14 @@ int main(int argc, char* argv[])
 			}
 			else if (command == "concat")
 			{
-				for (auto i = 3; i < argc; ++i)
+				const std::string format = argv[3];
+				for (auto i = 4; i < argc; ++i)
 				{
 					Database temp{};
-					Deserialization(temp, argv[i]);
+					Deserialization(temp, argv[i], format);
 					for (const auto& value : temp) FileMd5Database.insert(value);
 				}
-				Serialization(FileMd5Database, databaseFilePath);
+				Serialization(FileMd5Database, databaseFilePath, format);
 			}
 			else if (command == "convert" && argc == 6)
 			{
