@@ -81,6 +81,7 @@ Usage: databaseFilePath command [options]
 	query queryMethod[contain|startWith|regex] queryData[path|md5|size|fileModificationTime] keyword [format[binary|text]] [limit(default:100))]
 	concat format[binary|text] sourceDatabaseFile1 sourceDatabaseFile2 [sourceDatabaseFile...]
 	convert destFormat[text|binary] sourceFormat[text|binary] sourceDatabaseFile
+	export exportFormat[csv|json] exportPath [databaseFormat[binary|text]]
 
 default format: binary
 )";
@@ -521,11 +522,11 @@ void Serialization(Database& fmd, const std::string& databasePath, const std::st
 {
 	if (format == "text")
 	{
-		SerializationText(FileMd5Database, databasePath);
+		SerializationText(fmd, databasePath);
 	}
 	else
 	{
-		Serialization(FileMd5Database, databasePath);
+		Serialization(fmd, databasePath);
 	}
 }
 
@@ -533,11 +534,11 @@ void Deserialization(Database& fmd, const std::string& databasePath, const std::
 {
 	if (format == "text")
 	{
-		DeserializationText(FileMd5Database, databasePath);
+		DeserializationText(fmd, databasePath);
 	}
 	else
 	{
-		Deserialization(FileMd5Database, databasePath);
+		Deserialization(fmd, databasePath);
 	}
 }
 
@@ -610,6 +611,138 @@ void FormatConvert(Database& fmd, const std::string& destFormat, const std::stri
 	Serialization(fmd, databaseFilePath, destFormat);
 }
 
+class CsvFile
+{
+	std::ofstream fs_;
+	bool is_first_;
+	const std::string separator_;
+	const std::string escape_seq_;
+	const std::string special_chars_;
+public:
+	explicit CsvFile(const std::string filename, const std::string separator = ";")
+		: is_first_(true)
+		  , separator_(separator)
+		  , escape_seq_("\"")
+		  , special_chars_("\"")
+	{
+		fs_.exceptions(std::ios::failbit | std::ios::badbit);
+		fs_.open(filename);
+	}
+
+	CsvFile() = delete;
+	
+	~CsvFile()
+	{
+		flush();
+		fs_.close();
+	}
+
+	void flush()
+	{
+		fs_.flush();
+	}
+
+	void endrow()
+	{
+		fs_ << "\n";
+		is_first_ = true;
+	}
+
+	CsvFile& operator << (CsvFile& (*val)(CsvFile&))
+	{
+		return val(*this);
+	}
+
+	CsvFile& operator << (const char* val)
+	{
+		return write(escape(val));
+	}
+
+	CsvFile& operator << (const std::string& val)
+	{
+		return write(escape(val));
+	}
+
+	template<typename T>
+	CsvFile& operator << (const T& val)
+	{
+		return write(val);
+	}
+
+	static CsvFile& endrow(CsvFile& file)
+	{
+		file.endrow();
+		return file;
+	}
+
+	static CsvFile& flush(CsvFile& file)
+	{
+		file.flush();
+		return file;
+	}
+
+private:
+	template<typename T>
+	CsvFile& write(const T& val)
+	{
+		if (!is_first_)
+		{
+			fs_ << separator_;
+		}
+		else
+		{
+			is_first_ = false;
+		}
+		fs_ << val;
+		return *this;
+	}
+
+	std::string escape(const std::string& val)
+	{
+		std::ostringstream result;
+		result << '"';
+		std::string::size_type to, from = 0u, len = val.length();
+		while (from < len &&
+			std::string::npos != (to = val.find_first_of(special_chars_, from)))
+		{
+			result << val.substr(from, to - from) << escape_seq_ << val[to];
+			from = to + 1;
+		}
+		result << val.substr(from) << '"';
+		return result.str();
+	}
+};
+
+std::string& ReplaceString(std::string& str, const std::string& search, const std::string& replace)
+{
+	size_t pos = 0;
+	while ((pos = str.find(search, pos)) != std::string::npos)
+	{
+		str.replace(pos, search.length(), replace);
+		pos += replace.length();
+	}
+	return str;
+}
+
+void Export(Database& fmd, const std::string& path, const std::string& fotmat)
+{
+	if (fotmat == "csv")
+	{
+		CsvFile csv(path, ",");
+		for (const auto& pair : fmd)
+		{
+			const auto splitPos = pair.first.find(":");
+			auto _path = pair.first.substr(splitPos + 1);
+			csv << ReplaceString(_path, "\\", "/")
+				<< pair.first.substr(0, splitPos)
+				<< std::get<0>(pair.second)
+				<< std::to_string(std::get<1>(pair.second))
+				<< std::get<2>(pair.second)
+				<< CsvFile::endrow;
+		}
+	}
+}
+
 int main(int argc, char* argv[])
 {
 	try
@@ -666,6 +799,14 @@ int main(int argc, char* argv[])
 				const std::string sourceFormat = argv[4];
 				const std::string sourceDatabaseFile = argv[5];
 				FormatConvert(FileMd5Database, destFormat, databaseFilePath, sourceFormat, sourceDatabaseFile);
+			}
+			else if(command == "export" && argc <= 6)
+			{
+				const std::string exportFormat = argv[3];
+				const std::string exportPath = argv[4];
+				const std::string format = argc == 6 ? argv[5] : "";
+				Deserialization(FileMd5Database, databaseFilePath, format);
+				Export(FileMd5Database, exportPath, exportFormat);
 			}
 			else
 			{
