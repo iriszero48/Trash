@@ -161,12 +161,13 @@
             let preX = 0;
             let preY = 0;
 
-            function mousePressed() {
+            function touchStarted(event) {
                 preX = mouseX;
                 preY = mouseY;
+                if (touches.length === 1) event.preventDefault();
             }
 
-            function mouseReleased() {
+            function touchEnded() {
                 let dx = mouseX - preX;
                 let dy = mouseY - preY;
                 if (Math.abs(dx) > Math.abs(dy)) {
@@ -178,7 +179,8 @@
                 }
             }
         </script>
+        <script type="application/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
         <title>2048</title>
     </head>
-    <body></body>
+    <body id="main" onload="(() => $('#main').css('transform','scale(' + (window.innerHeight < window.innerWidth ? window.innerHeight : window.innerWidth) / 420 + ')'))()" style="position: absolute; transform-origin: 0 0"></body>
 </html>
