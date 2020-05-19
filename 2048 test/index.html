@@ -157,6 +157,26 @@
             function keyPressed(){
                 game.keyHandler(keyCode);
             }
+            
+            let preX = 0;
+            let preY = 0;
+
+            function mousePressed() {
+                preX = mouseX;
+                preY = mouseY;
+            }
+
+            function mouseReleased() {
+                let dx = mouseX - preX;
+                let dy = mouseY - preY;
+                if (Math.abs(dx) > Math.abs(dy)) {
+                    if (dx > 0) game.keyHandler(RIGHT_ARROW);
+                    else game.keyHandler(LEFT_ARROW);
+                } else {
+                    if (dy < 0) game.keyHandler(UP_ARROW);
+                    else game.keyHandler(DOWN_ARROW);
+                }
+            }
         </script>
         <title>2048</title>
     </head>
