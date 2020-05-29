@@ -10,6 +10,7 @@
 #include <stdbool.h>
 #include <math.h>
 #include <arpa/inet.h>
+#include <signal.h>
 
 static uint64_t recvCount, sendCount;
 
@@ -43,8 +44,13 @@ void Transfer(void* argv)
 		if (((int*)argv)[2]) recvCount += len;
 		else sendCount += len;
 	}
-	close(((int*)argv)[0]);
-	close(((int*)argv)[1]);
+	//close(((int*)argv)[0]);
+	//close(((int*)argv)[1]);
+}
+
+void Sigpipe(int value)
+{
+	printf("bk\n");
 }
 
 int main(const int argc, char* argv[])
@@ -53,6 +59,12 @@ int main(const int argc, char* argv[])
 	TimePrinter();
 	printf("init...\n");
 	int one = 1;
+
+struct sigaction action;
+    action.sa_handler = Sigpipe;
+    sigemptyset(&action.sa_mask);
+    action.sa_flags = 0;
+    sigaction(SIGPIPE, &action, NULL);
 
 	//User listen
 	struct sockaddr_in userSerAddr, userCliAddr;
@@ -68,7 +80,7 @@ int main(const int argc, char* argv[])
 		close(userSock);
 		err(1, "(user)Can't bind %d.", ntohs(userSerAddr.sin_port));
 	}
-	listen(userSock, 5);
+	listen(userSock, 1);
 
 	//Client listen
 	struct sockaddr_in clientSerAddr, clientCliAddr;
@@ -83,7 +95,7 @@ int main(const int argc, char* argv[])
 		close(clientSock);
 		err(1, "(client)Can't bind %d.", ntohs(clientSerAddr.sin_port));
 	}
-	listen(clientSock, 5);
+	listen(clientSock, 1);
 
 	//Start log
 	pthread_t logThread;
@@ -124,7 +136,10 @@ int main(const int argc, char* argv[])
 		printf("Swaping (user)%s:%d <=> (client)%s:%d.\n", inet_ntoa(userCliAddr.sin_addr), ntohs(userCliAddr.sin_port),
 			inet_ntoa(clientCliAddr.sin_addr), ntohs(clientCliAddr.sin_port));
 		if (pthread_join(user2clientThread, &ret) != 0) perror("(user2client)Can't join with thread.");
-		if (pthread_join(client2userThread2, &ret) != 0) perror("(client2user)Can't join with thread.");
+		//if (pthread_join(client2userThread2, &ret) != 0) perror("(client2user)Can't join with thread.");
+		pthread_cancel(client2userThread2);
+		close(userCliFd);
+		close(clientCliFd);
 		TimePrinter();
 		printf("Drop.\n");
 	}
