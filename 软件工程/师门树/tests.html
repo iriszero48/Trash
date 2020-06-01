@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>QUnit Example</title>
+    <link rel="stylesheet" href="https://code.jquery.com/qunit/qunit-2.9.2.css">
+</head>
+<body>
+<div id="qunit"></div>
+<div id="qunit-fixture"></div>
+<script src="https://code.jquery.com/qunit/qunit-2.9.2.js"></script>
+<script>
+    function Main(x) {
+        let nodeDataArray = [{ key: 1, text: "师生树" }];
+        let inArrArr = x.split('\n\n');
+        let id = 1;
+        inArrArr.forEach(x => {
+            let inArr = x.split('\n');
+            nodeDataArray.push({ key: ++id, text: inArr[0].split('：')[1], parent: 1 });
+            let rootId = id;
+            inArr.slice(1).sort().forEach(y => {
+                let data = y.split('：');
+                nodeDataArray.push({ key: ++id, text: data[0], parent: rootId });
+                let subId = id;
+                data[1].split('、').forEach(z => nodeDataArray.push({ key: ++id, text: z, parent: subId })); // 添加学生
+            });
+        });
+        return nodeDataArray;
+    }
+
+    QUnit.test("standard1", assert => {
+        const str = "导师：许三\n" +
+            "2009级博士生：赵大、李六、赵三\n" +
+            "2010级硕士生：张三、钱四、刘二\n" +
+            "2009级硕士生：孙一、孙三、钱二\n" +
+            "2011级博士生：孔三、刘四、吴九";
+        const res = "[{\"key\":1,\"text\":\"师生树\"},{\"key\":2,\"text\":\"许三\",\"parent\":1},{\"key\":3,\"text\":\"2009级博士生\",\"parent\":2},{\"key\":4,\"text\":\"赵大\",\"parent\":3},{\"key\":5,\"text\":\"李六\",\"parent\":3},{\"key\":6,\"text\":\"赵三\",\"parent\":3},{\"key\":7,\"text\":\"2009级硕士生\",\"parent\":2},{\"key\":8,\"text\":\"孙一\",\"parent\":7},{\"key\":9,\"text\":\"孙三\",\"parent\":7},{\"key\":10,\"text\":\"钱二\",\"parent\":7},{\"key\":11,\"text\":\"2010级硕士生\",\"parent\":2},{\"key\":12,\"text\":\"张三\",\"parent\":11},{\"key\":13,\"text\":\"钱四\",\"parent\":11},{\"key\":14,\"text\":\"刘二\",\"parent\":11},{\"key\":15,\"text\":\"2011级博士生\",\"parent\":2},{\"key\":16,\"text\":\"孔三\",\"parent\":15},{\"key\":17,\"text\":\"刘四\",\"parent\":15},{\"key\":18,\"text\":\"吴九\",\"parent\":15}]";
+        assert.equal(JSON.stringify(Main(str)), res, "Passed!");
+    });
+
+    QUnit.test("standard2", assert => {
+        const str = "导师：张三\n" +
+            "2016级博士生：天一、王二、吴五\n" +
+            "2015级硕士生：李四、王五、许六\n" +
+            "2016级硕士生：刘一、李二、李三\n" +
+            "2017级本科生：刘六、琪七、司四";
+        const res = "[{\"key\":1,\"text\":\"师生树\"},{\"key\":2,\"text\":\"张三\",\"parent\":1},{\"key\":3,\"text\":\"2015级硕士生\",\"parent\":2},{\"key\":4,\"text\":\"李四\",\"parent\":3},{\"key\":5,\"text\":\"王五\",\"parent\":3},{\"key\":6,\"text\":\"许六\",\"parent\":3},{\"key\":7,\"text\":\"2016级博士生\",\"parent\":2},{\"key\":8,\"text\":\"天一\",\"parent\":7},{\"key\":9,\"text\":\"王二\",\"parent\":7},{\"key\":10,\"text\":\"吴五\",\"parent\":7},{\"key\":11,\"text\":\"2016级硕士生\",\"parent\":2},{\"key\":12,\"text\":\"刘一\",\"parent\":11},{\"key\":13,\"text\":\"李二\",\"parent\":11},{\"key\":14,\"text\":\"李三\",\"parent\":11},{\"key\":15,\"text\":\"2017级本科生\",\"parent\":2},{\"key\":16,\"text\":\"刘六\",\"parent\":15},{\"key\":17,\"text\":\"琪七\",\"parent\":15},{\"key\":18,\"text\":\"司四\",\"parent\":15}]";
+        assert.equal(JSON.stringify(Main(str)), res, "Passed!");
+    });
+
+    QUnit.test("multi", assert => {
+        const str = "导师：许六\n" +
+            "2009级博士生：赵大、李六、赵三\n" +
+            "2010级硕士生：张三、钱四、刘二\n" +
+            "2009级硕士生：孙一、孙三、钱二\n" +
+            "2011级博士生：孔三、刘四、吴九\n" +
+            "\n" +
+            "导师：张三\n" +
+            "2016级博士生：天一、王二、吴五\n" +
+            "2015级硕士生：李四、王五、许六\n" +
+            "2016级硕士生：刘一、李二、李三\n" +
+            "2017级本科生：刘六、琪七、司四";
+        const res = "[{\"key\":1,\"text\":\"师生树\"},{\"key\":2,\"text\":\"许六\",\"parent\":1},{\"key\":3,\"text\":\"2009级博士生\",\"parent\":2},{\"key\":4,\"text\":\"赵大\",\"parent\":3},{\"key\":5,\"text\":\"李六\",\"parent\":3},{\"key\":6,\"text\":\"赵三\",\"parent\":3},{\"key\":7,\"text\":\"2009级硕士生\",\"parent\":2},{\"key\":8,\"text\":\"孙一\",\"parent\":7},{\"key\":9,\"text\":\"孙三\",\"parent\":7},{\"key\":10,\"text\":\"钱二\",\"parent\":7},{\"key\":11,\"text\":\"2010级硕士生\",\"parent\":2},{\"key\":12,\"text\":\"张三\",\"parent\":11},{\"key\":13,\"text\":\"钱四\",\"parent\":11},{\"key\":14,\"text\":\"刘二\",\"parent\":11},{\"key\":15,\"text\":\"2011级博士生\",\"parent\":2},{\"key\":16,\"text\":\"孔三\",\"parent\":15},{\"key\":17,\"text\":\"刘四\",\"parent\":15},{\"key\":18,\"text\":\"吴九\",\"parent\":15},{\"key\":19,\"text\":\"张三\",\"parent\":1},{\"key\":20,\"text\":\"2015级硕士生\",\"parent\":19},{\"key\":21,\"text\":\"李四\",\"parent\":20},{\"key\":22,\"text\":\"王五\",\"parent\":20},{\"key\":23,\"text\":\"许六\",\"parent\":20},{\"key\":24,\"text\":\"2016级博士生\",\"parent\":19},{\"key\":25,\"text\":\"天一\",\"parent\":24},{\"key\":26,\"text\":\"王二\",\"parent\":24},{\"key\":27,\"text\":\"吴五\",\"parent\":24},{\"key\":28,\"text\":\"2016级硕士生\",\"parent\":19},{\"key\":29,\"text\":\"刘一\",\"parent\":28},{\"key\":30,\"text\":\"李二\",\"parent\":28},{\"key\":31,\"text\":\"李三\",\"parent\":28},{\"key\":32,\"text\":\"2017级本科生\",\"parent\":19},{\"key\":33,\"text\":\"刘六\",\"parent\":32},{\"key\":34,\"text\":\"琪七\",\"parent\":32},{\"key\":35,\"text\":\"司四\",\"parent\":32}]"
+        assert.equal(JSON.stringify(Main(str)), res, "Passed!");
+    });
+</script>
+</body>
+</html>
