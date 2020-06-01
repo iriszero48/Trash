@@ -1,0 +1,25 @@
+-- 自己动手模仿例7进行归档模式的联机物理恢复测试。
+shutdown immediate;
+startup mount;
+alter database archivelog;
+alter system set log_archive_dest_10='location=d:/';
+alter database open;
+archive log list;
+create user test identified by test default tablespace users temporary tablespace temp;
+grant connect,resource to test;
+conn test/test;
+create table test(x number);
+insert into test values(1);
+commit;
+conn /as sysdba;
+alter system archive log current;
+shutdown immediate;
+host copy D:\Oracle\oradata\orcl\USERS01.DBF D:\;
+host del D:\Oracle\oradata\orcl\USERS01.DBF;
+startup;
+host copy D:\USERS01.DBF D:\Oracle\oradata\orcl\;
+recover database;
+alter database datafile 'D:\Oracle\oradata\orcl\USERS01.DBF' online;
+alter database open;
+conn test/test;
+select * from test;
