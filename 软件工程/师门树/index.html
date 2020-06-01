@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Parse Tree</title>
+    <meta name="description" content="A collapsible tree layout with all of the leaf nodes at the same layer." />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://unpkg.com/gojs/release/go.js"></script>
+    <script id="code">
+        function init() {
+            var $ = go.GraphObject.make;
+            myDiagram =
+                $(go.Diagram, "myDiagramDiv",
+                    {
+                        allowCopy: false,
+                        allowDelete: false,
+                        allowMove: false,
+                        initialAutoScale: go.Diagram.Uniform,
+                        layout:
+                            $(FlatTreeLayout,
+                                {
+                                    angle: 90,
+                                    compaction: go.TreeLayout.CompactionNone
+                                }),
+                        "undoManager.isEnabled": true
+                    });
+            myDiagram.nodeTemplate =
+                $(go.Node, "Vertical",
+                    { selectionObjectName: "BODY" },
+                    $(go.Panel, "Auto", { name: "BODY" },
+                        $(go.Shape, "RoundedRectangle",
+                            new go.Binding("fill"),
+                            new go.Binding("stroke")),
+                        $(go.TextBlock,
+                            { font: "bold 12pt Arial, sans-serif", margin: new go.Margin(4, 2, 2, 2) },
+                            new go.Binding("text"))
+                    ),
+                    $(go.Panel,
+                        { height: 17 },
+                        $("TreeExpanderButton")
+                    )
+                );
+            myDiagram.linkTemplate =
+                $(go.Link,
+                    $(go.Shape, { strokeWidth: 1.5 }));
+
+            const color0 = 'rgba(87,124,151,90)';
+            const color1 = 'rgba(164,193,209,90)';
+            const color2 = 'rgba(178,76,71,90)';
+            const color3 = 'rgba(252,167,160,90)';
+
+            // 初始化
+            let nodeDataArray = [
+                { key: 1, text: "师生树", fill: color0, stroke: color0 }
+            ];
+            let inArrArr = document.getElementById('input').value.split('\n\n');
+            let id = 1;
+            // 对每组进行处理
+            inArrArr.forEach(x => {
+                let inArr = x.split('\n');
+                nodeDataArray.push({ key: ++id, text: inArr[0].split('：')[1], fill: color1, stroke: color1, parent: 1 }); // 添加导师
+                let rootId = id;
+                // 对每行进行处理
+                inArr.slice(1).sort().forEach(y => {
+                    let data = y.split('：');
+                    nodeDataArray.push({ key: ++id, text: data[0], fill: color2, stroke: color2, parent: rootId }); // 添加级数
+                    let subId = id;
+                    data[1].split('、').forEach(z => nodeDataArray.push({ key: ++id, text: z, fill: color3, stroke: color3, parent: subId })); // 添加学生
+                });
+            });
+
+            myDiagram.model =
+                $(go.TreeModel,
+                    { nodeDataArray: nodeDataArray });
+        }
+
+        // Customize the TreeLayout to position all of the leaf nodes at the same vertical Y position.
+        function FlatTreeLayout() {
+            go.TreeLayout.call(this);
+        }
+        go.Diagram.inherit(FlatTreeLayout, go.TreeLayout);
+        FlatTreeLayout.prototype.commitLayout = function() {
+            go.TreeLayout.prototype.commitLayout.call(this);
+            var y = -Infinity;
+            this.network.vertexes.each(function(v) {
+                y = Math.max(y, v.node.position.y);
+            });
+            this.network.vertexes.each(function(v) {
+                if (v.destinationEdges.count === 0) {
+                    v.node.position = new go.Point(v.node.position.x, y);
+                    v.node.toEndSegmentLength = Math.abs(v.centerY - y);
+                } else {
+                    v.node.toEndSegmentLength = 10;
+                }
+            });
+        };
+    </script>
+</head>
+<body>
+<div id="sample">
+    <div id="myDiagramDiv" style="border: solid 1px black; width:100%; height:500px"></div>
+    <label for="input"><textarea id="input" style="width: 100%; height: 25%"></textarea></label><br/>
+    <button onclick="init()">提交</button>
+</div>
+</body>
+</html>
