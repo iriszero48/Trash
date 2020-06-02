@@ -1,186 +1,199 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <script type="application/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.0.0/p5.min.js"></script>
-        <script type="application/javascript">
-            let img;
+<head>
+    <link rel="icon" href="Favicon.ico"/>
+    <script type="application/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.0.0/p5.min.js"></script>
+    <script type="application/javascript">
+        let img;
+        let scale;
 
-            function Tile(pos, val, puzzle){
-                this.pos     = pos;
-                this.val     = val;
-                this.puzzle  = puzzle;
-                this.merging = false;
-                this.getCol = () => Math.round(this.pos % 4);
-                this.getRow = () => Math.floor(this.pos / 4);
-                this.show = function() {
-                    let size = 0.25*width;
-                    noStroke();
-                    image(img[this.val],(this.getCol())*size, (this.getRow())*size);
-                };
-                this.move = function(dir) {
-                    let col = this.getCol() + (1 - 2*(dir < 0))*Math.abs(dir)%4;
-                    let row = this.getRow() + (1 - 2*(dir < 0))*Math.floor(Math.abs(dir)/4);
-                    let target = this.puzzle.getTile(this.pos + dir);
-                    if (col < 0 || col > 3 || row < 0 || row > 3) {
+        function Tile(pos, val, puzzle){
+            this.pos     = pos;
+            this.val     = val;
+            this.puzzle  = puzzle;
+            this.merging = false;
+            this.getCol = () => Math.round(this.pos % 4);
+            this.getRow = () => Math.floor(this.pos / 4);
+            this.show = function() {
+                let size = 0.25*width;
+                noStroke();
+                image(img[this.val],(this.getCol())*size, (this.getRow())*size);
+            };
+            this.move = function(dir) {
+                let col = this.getCol() + (1 - 2*(dir < 0))*Math.abs(dir)%4;
+                let row = this.getRow() + (1 - 2*(dir < 0))*Math.floor(Math.abs(dir)/4);
+                let target = this.puzzle.getTile(this.pos + dir);
+                if (col < 0 || col > 3 || row < 0 || row > 3) {
+                    return false;
+                } else if (target) {
+                    if(this.merging || target.merging || target.val !== this.val)
                         return false;
-                    } else if (target) {
-                        if(this.merging || target.merging || target.val !== this.val)
-                            return false;
-                        target.val += this.val;
-                        target.merging = true;
-                        this.puzzle.score += target.val;
-                        this.puzzle.removeTile(this);
-                        return true;
-                    }
-                    this.pos += dir;
+                    target.val += this.val;
+                    target.merging = true;
+                    this.puzzle.score += target.val;
+                    this.puzzle.removeTile(this);
                     return true;
                 }
+                this.pos += dir;
+                return true;
             }
+        }
 
-            function Puzzle(){
-                this.tiles = [];
-                this.dir = 0;
-                this.score = 0;
-                this.hasMoved = false;
-                this.validPositions = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15];
+        function Puzzle(){
+            this.tiles = [];
+            this.dir = 0;
+            this.score = 0;
+            this.hasMoved = false;
+            this.validPositions = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15];
+            this.hasOvered = false;
 
-                this.getOpenPositions = () => this.validPositions.filter(i => this.tiles.map(x => x.pos).indexOf(i) === -1);
-                this.getTile          = pos => this.tiles.filter(x => x.pos === pos)[0];
-                this.removeTile       = tile => this.tiles.splice(this.tiles.indexOf(tile), 1);
+            this.getOpenPositions = () => this.validPositions.filter(i => this.tiles.map(x => x.pos).indexOf(i) === -1);
+            this.getTile          = pos => this.tiles.filter(x => x.pos === pos)[0];
+            this.removeTile       = tile => this.tiles.splice(this.tiles.indexOf(tile), 1);
 
-                this.validMoves = function(){
-                    if(this.tiles.length < 16)
-                        return true;
+            this.validMoves = function(){
+                if(this.tiles.length < 16)
+                    return true;
 
-                    let res = false;
-                    this.tiles.sort((x,y) => x.pos - y.pos);
-                    for(let i = 0; i < 16; i++)
-                        res = res || ( (i%4 < 3) ? this.tiles[i].val === this.tiles[i+1].val : false )
-                            || ( (i  < 12) ? this.tiles[i].val === this.tiles[i+4].val : false );
-                    return res;
-                };
+                let res = false;
+                this.tiles.sort((x,y) => x.pos - y.pos);
+                for(let i = 0; i < 16; i++)
+                    res = res || ( (i%4 < 3) ? this.tiles[i].val === this.tiles[i+1].val : false )
+                        || ( (i  < 12) ? this.tiles[i].val === this.tiles[i+4].val : false );
+                return res;
+            };
 
-                this.checkGameState = function(){
-                    if (!this.validMoves()){
-                        alert('Game Over!');
-                        this.restart();
-                    }
-                };
-
-                this.restart = function(){
-                    this.tiles    = [];
-                    this.dir      = 0;
-                    this.score    = 0;
-                    this.hasMoved = false;
-                    this.generateTile();
-                    this.generateTile();
-                };
-
-                this.show = function(){
-                    background([251,244,252]);
-                    fill([248,214,247]);
-                    textSize(0.05*width);
-                    textAlign(CENTER, TOP);
-                    text("SCORE: " + this.score, 0.5*width, width);
-
-                    for(let tile of this.tiles)
-                        tile.show();
-                };
-
-                this.animate = function(){
-                    if(this.dir === 0)
-                        return;
-
-                    let moving = false;
-                    this.tiles.sort((x,y) => this.dir*(y.pos - x.pos));
-                    for(let tile of this.tiles)
-                        moving = moving || tile.move(this.dir);
-
-                    if(this.hasMoved && !moving){
-                        this.dir = 0;
-                        this.generateTile();
-
-                        for(let tile of this.tiles)
-                            tile.merging = false;
-                    }
-                    this.hasMoved = moving;
-                };
-
-                this.generateTile = function(){
-                    let positions = this.getOpenPositions();
-                    let pos       = positions[Math.floor(Math.random()*positions.length)];
-                    let val       = 2 + 2*Math.floor(Math.random()*1.11);
-                    this.tiles.push(new Tile(pos, val, this));
-                };
-                this.generateTile();
-                this.generateTile();
-
-                this.keyHandler = function(key) {
-                    if (key === UP_ARROW) this.dir = -4;
-                    else if (key === DOWN_ARROW) this.dir = 4;
-                    else if (key === RIGHT_ARROW) this.dir = 1;
-                    else if (key === LEFT_ARROW) this.dir = -1;
+            this.checkGameState = function(){
+                if (!this.validMoves() && !this.hasOvered){
+                    alert('Game Over\nScore: ' + this.score + '\n2048(Honkai Impact 3 ver.) test\n-- Made for 5.20');
+                    //this.restart();
+                    this.hasOvered = true;
                 }
+            };
+
+            this.restart = function(){
+                this.tiles    = [];
+                this.dir      = 0;
+                this.score    = 0;
+                this.hasMoved = false;
+                this.generateTile();
+                this.generateTile();
+            };
+
+            this.show = function(){
+                background([251,244,252]);
+                fill([248,214,247]);
+                textSize(0.05*width);
+                textAlign(CENTER, TOP);
+                text("SCORE: " + this.score, 0.5*width, width);
+
+                for(let tile of this.tiles)
+                    tile.show();
+            };
+
+            this.animate = function(){
+                if(this.dir === 0)
+                    return;
+
+                let moving = false;
+                this.tiles.sort((x,y) => this.dir*(y.pos - x.pos));
+                for(let tile of this.tiles)
+                    moving = moving || tile.move(this.dir);
+
+                if(this.hasMoved && !moving){
+                    this.dir = 0;
+                    this.generateTile();
+
+                    for(let tile of this.tiles)
+                        tile.merging = false;
+                }
+                this.hasMoved = moving;
+            };
+
+            this.generateTile = function(){
+                let positions = this.getOpenPositions();
+                let pos       = positions[Math.floor(Math.random()*positions.length)];
+                let val       = 2 + 2*Math.floor(Math.random()*1.11);
+                this.tiles.push(new Tile(pos, val, this));
+            };
+            this.generateTile();
+            this.generateTile();
+
+            this.keyHandler = function(key) {
+                if (key === UP_ARROW) this.dir = -4;
+                else if (key === DOWN_ARROW) this.dir = 4;
+                else if (key === RIGHT_ARROW) this.dir = 1;
+                else if (key === LEFT_ARROW) this.dir = -1;
             }
+        }
 
-            let game;
+        let game;
 
-            function setup() {
-                createCanvas(400, 420);
-                img = {
-                    2:loadImage('2.png'),
-                    4:loadImage('4.png'),
-                    8:loadImage('8.png'),
-                    16:loadImage('16.png'),
-                    32:loadImage('32.png'),
-                    64:loadImage('64.png'),
-                    128:loadImage('128.png'),
-                    256:loadImage('256.png'),
-                    512:loadImage('512.png'),
-                    1024:loadImage('1024.png'),
-                    2048:loadImage('2048.png'),
-                    4096:loadImage('4096.png'),
-                    8192:loadImage('8192.png'),
-                    16384:loadImage('16384.png'),
-                    32768:loadImage('32768.png'),
-                    65536:loadImage('65536.png')
-                };
-                game = new Puzzle();
-            }
+        function setup() {
+            createCanvas(400, 420);
+            img = {
+                2:loadImage('2.png'),
+                4:loadImage('4.png'),
+                8:loadImage('8.png'),
+                16:loadImage('16.png'),
+                32:loadImage('32.png'),
+                64:loadImage('64.png'),
+                128:loadImage('128.png'),
+                256:loadImage('256.png'),
+                512:loadImage('512.png'),
+                1024:loadImage('1024.png'),
+                2048:loadImage('2048.png'),
+                4096:loadImage('4096.png'),
+                8192:loadImage('8192.png'),
+                16384:loadImage('16384.png'),
+                32768:loadImage('32768.png'),
+                65536:loadImage('65536.png')
+            };
+            game = new Puzzle();
+        }
 
-            function draw() {
-                game.checkGameState();
-                game.animate();
-                game.show();
-            }
+        function draw() {
+            game.checkGameState();
+            game.animate();
+            game.show();
+        }
 
-            function keyPressed(){
-                game.keyHandler(keyCode);
-            }
-            
-            let preX = 0;
-            let preY = 0;
+        function keyPressed(){
+            game.keyHandler(keyCode);
+        }
 
-            function touchStarted(event) {
-                preX = mouseX;
-                preY = mouseY;
-                if (touches.length === 1) event.preventDefault();
-            }
+        let preX = 0;
+        let preY = 0;
 
-            function touchEnded() {
-                let dx = mouseX - preX;
-                let dy = mouseY - preY;
-                if (Math.abs(dx) > Math.abs(dy)) {
+        function touchStarted(event) {
+            preX = mouseX;
+            preY = mouseY;
+            if (touches.length === 1) event.preventDefault();
+        }
+
+        function touchEnded() {
+            let dx = mouseX - preX;
+            let dy = mouseY - preY;
+            let dxAbs = Math.abs(dx);
+            let dyAbs = Math.abs(dy);
+            if (dxAbs > Math.abs(dy)) {
+                if (dxAbs > scale * 25) {
                     if (dx > 0) game.keyHandler(RIGHT_ARROW);
                     else game.keyHandler(LEFT_ARROW);
-                } else {
+                }
+            } else {
+                if (dyAbs > scale * 25) {
                     if (dy < 0) game.keyHandler(UP_ARROW);
                     else game.keyHandler(DOWN_ARROW);
                 }
             }
-        </script>
-        <script type="application/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-        <title>2048</title>
-    </head>
-    <body id="main" onload="(() => $('#main').css('transform','scale(' + (window.innerHeight < window.innerWidth ? window.innerHeight : window.innerWidth) / 420 + ')'))()" style="position: absolute; transform-origin: 0 0"></body>
+        }
+    </script>
+    <script type="application/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <title>2048</title>
+</head>
+<body id="main" onload="(() => {
+        scale = (window.innerHeight < window.innerWidth ? window.innerHeight * 0.90 : window.innerWidth * 0.99) / 400;
+        $('#main').css('transform','scale(' + scale + ')')
+    })()" style="position: absolute; transform-origin: 0 0"></body>
 </html>
