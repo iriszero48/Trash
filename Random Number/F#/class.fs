@@ -1,6 +1,8 @@
 type RandomNumber() =
     let csp = new System.Security.Cryptography.RNGCryptoServiceProvider()
 
+    override this.Finalize() = csp.Dispose()
+
     member this.RandomBytes len =
         let buf = Array.zeroCreate len
         csp.GetBytes buf
