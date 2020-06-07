@@ -23,8 +23,7 @@ module RandomNumber =
 
 [<EntryPoint>]
 let main argv =
-    let rn = new RandomNumber()
-    Seq.init 10000 (fun _ -> async{ return rn.RandomUint64 0UL 100UL })
+    Seq.init 10000 (fun _ -> async{ return RandomNumber.RandomUint64 0UL 100UL })
     |> Async.Parallel
     |> Async.RunSynchronously
     |> Seq.countBy (fun x -> x)
