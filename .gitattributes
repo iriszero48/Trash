@@ -29,4 +29,3 @@
 *.gradle linguist-language=Gradle
 *.shader linguist-language=ShaderLab
 *.bas linguist-language=Visual Basic
-*.jsp linguist-language=Java Server Pages
