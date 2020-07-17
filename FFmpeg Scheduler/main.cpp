@@ -10,13 +10,22 @@
 #include <utility>
 #include <optional>
 #include <charconv>
+#include <thread>
+#include <chrono>
 
-template<char Suffix = ' '>
+#define ToStringFunc(x) #x
+#define ToString(x) ToStringFunc(x)
+
+#define Line ToString(__LINE__)
+
+#define ThrowEx(...) throw std::exception(Combine( __FILE__ ": " Line ":\n", __VA_ARGS__).c_str())
+
+template <char Suffix = ' '>
 class SuffixString : public std::string
 {
 public:
-	SuffixString(const char* str): std::string(str) { }
-	SuffixString(const std::string& str): std::string(str) { }
+	template <typename ...T>
+	SuffixString(T&&... arg): std::string(std::forward<T>(arg)...) { }
 
 	friend std::ostream& operator<<(std::ostream& ss, const SuffixString<Suffix>& cs)
 	{
@@ -24,13 +33,15 @@ public:
 	}
 };
 
-template<typename ...Args>
+template <typename ...Args>
 std::string Combine(Args&&... args)
 {
 	std::ostringstream ss;
 	(ss << ... << args);
 	return ss.str();
 }
+
+#pragma region PresetElement
 
 const SuffixString HwCuvid = "-hwaccel cuvid";
 
@@ -86,8 +97,10 @@ const SuffixString OutputJpg = R"("$$$output$$$.jpg")";
 const SuffixString OutputPng = R"("$$$output$$$.png")";
 const SuffixString OutputMp4 = R"("$$$output$$$.mp4")";
 
+#pragma endregion PresetElement
 
 std::unordered_map<std::string, std::string> Preset
+
 {
 	{"anima,avc,comp", Combine(InputCopy, AnimaAvcComp, Output)},
 	{"anima,avc,comp,colorspace=bt709", Combine(InputCopy, AnimaAvcComp, ColorSpaceBt709, Output)},
@@ -130,63 +143,57 @@ std::unordered_map<std::string, std::string> Preset
 	{"vid,mp4", Combine(Input, OutputMp4)}
 };
 
-std::string PresetDesc()
+[[nodiscard]] std::string PresetDesc()
 {
 	std::ostringstream ss;
 	for (auto& preset : Preset)
 	{
-		ss << SuffixString<'\n'>(Combine(std::string(8,' '), preset.first, " => ", preset.second));
+		ss << SuffixString<'\n'>(Combine(std::string(8, ' '), preset.first, " => ", preset.second));
 	}
 	return ss.str();
 }
 
-template<typename T = std::string>
+template <typename T = std::string>
 class Argument
 {
 public:
 	using ConstraintFuncMsg = std::optional<std::string>;
 	using ConstraintFunc = std::function<ConstraintFuncMsg(T)>;
-
 	using ConvertFunc = std::function<T(std::string)>;
-	
+
 	std::string name;
 	std::string desc;
 
-	//Argument(std::string name, T defaultValue, std::string desc): val(defaultValue), name(name), desc(desc) { }
-	
-	Argument(
+	explicit Argument(
 		std::string name,
 		std::string desc = "",
 		std::optional<T> defaultValue = {},
 		ConstraintFunc constraint = [](auto) { return std::nullopt; },
-		ConvertFunc convert = [](auto val) { return val; })
-	//:val(defaultValue), constraint(constraint), name(name), desc(desc)
-	{
-		this->name = name;
-		this->constraint = constraint;
-		this->val = defaultValue;
-		this->desc = desc;
-		this->convert = convert;
-	}
+		ConvertFunc convert = [](auto val) { return val; }):
+			name(std::move(name)),
+			desc(std::move(desc)),
+			val(std::move(defaultValue)),
+			constraint(std::move(constraint)),
+			convert(std::move(convert)) { }
 
 	void Set(const std::string& value)
 	{
 		auto conv = convert(value);
 		auto msg = constraint(conv);
-		if (!msg) { val = conv; }
-		else { throw std::exception(msg.value().c_str()); }
+		if (!msg)
+		{
+			val = conv;
+		}
+		else
+		{
+			ThrowEx(name, ": ", msg.value().c_str());
+		}
 	}
 
-	[[nodiscard]] std::optional<T> Get()
-	{
-		return val;
-	}
+	[[nodiscard]] std::optional<T> Get() { return val; }
 
-	operator std::string() const
-	{
-		return name;
-	}
-	
+	operator std::string() const { return name; }
+
 private:
 	std::optional<T> val;
 	ConstraintFunc constraint;
@@ -195,29 +202,31 @@ private:
 
 class Arguments
 {
-	std::unordered_map<std::string, Argument<>> args;
 public:
 	void Parse(const int argc, char** argv)
 	{
-		if (argc < 3 && (argc & 1) == 1) throw std::exception(Combine(argv[0], " [options]\n", GetDesc(), PresetDesc()).c_str());
-		for (int i = 1; i < argc; i += 2)
+		if (argc < 3 || (argc & 1) == 0)
 		{
-			if (argv[i][0] == '-' && args.find(argv[i] + 1) == args.end())
+			ThrowEx(SuffixString(argv[0]), " [options]\n", GetDesc(), PresetDesc());
+		}
+		for (auto i = 1; i < argc; i += 2)
+		{
+			if (argv[i][0] != '-' || args.find(argv[i] + 1) == args.end())
 			{
-				throw std::exception(Combine(argv[i], ": Option not found").c_str());
+				ThrowEx(argv[i], ": Option not found");
 			}
 			args.at(argv[i] + 1).Set(argv[i + 1]);
 		}
 	}
-	
-	template<typename ...T>
-	void Add(T&&... arg)
+
+	template <typename ...T>
+	void Add(T&&... args)
 	{
-		Argument<> arg_(std::forward<T>(arg)...);
-		args.emplace(arg_.name, arg_);
+		Argument<> arg(std::forward<T>(args)...);
+		args.emplace(arg.name, arg);
 	}
 
-	template<typename T>
+	template <typename T>
 	void Add(const Argument<T> arg)
 	{
 		args.insert(std::pair<std::string, Argument<>>(arg.name, arg));
@@ -228,21 +237,27 @@ public:
 		std::ostringstream ss;
 		for (auto& arg : args)
 		{
-			ss << SuffixString<'\n'>(Combine(SuffixString<'-'>(
-				std::string(4, ' ')),
-				SuffixString(arg.first),
-				arg.second.desc));
+			ss << SuffixString<'\n'>(Combine(SuffixString<'-'>(std::string(4, ' ')),
+			                                 SuffixString(arg.first),
+			                                 arg.second.desc));
 		}
 		return ss.str();
 	}
 
-	template<typename T = std::string>
+	template <typename T = std::string>
 	T Value(const std::string& arg)
 	{
-		return args.at(arg).Get().value();
+		try
+		{
+			return args.at(arg).Get().value();
+		}
+		catch (const std::exception& e)
+		{
+			ThrowEx("-", args.at(arg).name, ": ", e.what());
+		}
 	}
-	
-	template<typename T = std::string>
+
+	template <typename T = std::string>
 	std::optional<T> Get(const std::string& arg)
 	{
 		return args.at(arg).Get();
@@ -253,102 +268,107 @@ public:
 		return args.at(arg);
 	}
 
-	
+private:
+	std::unordered_map<std::string, Argument<>> args;
 };
+
+template<typename In = std::string, typename Out = int>
+Out Convert(const In& value)
+{
+	Out res;
+	std::from_chars(value.data(), value.data() + value.size(), res);
+	return res;
+}
 
 int main(int argc, char* argv[])
 {
+#define UnrecognizedOption(v) Argument<>::ConstraintFuncMsg{ Combine(SuffixString("Unrecognized option:"), v) }
+#define UnrecognizedOptionFunc(func) [](auto v) { return (func) ? std::nullopt : UnrecognizedOption(v); }
+	
 	try
 	{
 		Arguments args{};
 		Argument input("i", "input");
 		Argument output("o", "output");
 		Argument<int> thread(
-			{"t"},
+			"t",
 			"thread",
 			1,
-			{
-				[](auto v)
-				{
-					return v > 0
-						       ? std::nullopt
-						       : Argument<>::ConstraintFuncMsg{
-							       Combine(SuffixString("m:"), SuffixString("Unrecognized option:"), v)
-						       };
-				}
-			},
-			{
-				[](std::string v)
-				{
-					int res;
-					std::from_chars(v.data(), v.data() + v.size(), res);
-					return res;
-				}
-			});
+			{ UnrecognizedOptionFunc(v > 0) },
+			Convert<std::string, int>);
 		Argument custom("c", "custom");
-		Argument mode({"m"}, {"[(f)|d] file/directory"}, {"f"}, {
-			              [](auto v)
-			              {
-				              return v == "f" || v == "d"
-					                     ? std::nullopt
-					                     : Argument<>::ConstraintFuncMsg{
-						                     Combine(SuffixString("m:"), SuffixString("Unrecognized option:"),
-						                             v)
-					                     };
-			              }
-		              });
-		Argument preset("p", "preset");
+		Argument mode(
+			"m", 
+			"[(f)|d] file/directory",
+			{ "f" }, 
+			{ UnrecognizedOptionFunc(v == "f" || v == "d") });
+		Argument preset(
+			"p",
+			"preset",
+			{},
+			{ UnrecognizedOptionFunc(Preset.find(v) == Preset.end()) });
 		
 		args.Add(input);
-		//args.Add(output);
-		//args.Add(thread);
+		args.Add(output);
+		args.Add(thread);
 		args.Add(custom);
 		args.Add(mode);
 		args.Add(preset);
-		
+
 		args.Parse(argc, argv);
 
+		const auto presetCmd = args.Get(custom) ? args.Value(custom) : Combine("ffmpeg ", Preset[args.Value(preset)]);
+		
+		const auto inputPath = std::filesystem::path(args.Value(input));
+		const auto outputPath = args.Get(output) ? args.Value(output) : inputPath / "done";
+
+		std::regex inputRe(R"(\${3}input\${3})");
+		std::regex outputRe(R"(\${3}output\${3})");
+
+		if (!exists(outputPath)) create_directory(outputPath);
+		
 		if (args[mode].Get().value() == "f")
 		{
-			if (args.Get(custom))
+			const auto rawPath = inputPath / "raw";
+			if (!exists(rawPath)) create_directory(rawPath);
+			
+			for (auto& file : std::filesystem::directory_iterator(
+				inputPath, std::filesystem::directory_options::skip_permission_denied))
 			{
-				
-			}
-			else
-			{
-				const auto presetCmd = Combine(SuffixString("ffmpeg"), args.Value(preset));
-				
-				const auto dir = std::filesystem::path(args.Value(input));
-				const auto rawDir = dir / "raw";
-				const auto doneDir = dir / "done";
-
-				if (!exists(rawDir)) create_directory(rawDir);
-				if (!exists(doneDir)) create_directory(doneDir);
-
-				std::regex inputRe(R"(\${3}input\${3})");
-				std::regex outputRe(R"(\${3}output\${3})");
-
-				for (auto& file : std::filesystem::directory_iterator(
-					dir, std::filesystem::directory_options::skip_permission_denied))
+				if (!file.is_regular_file()) continue;
+				auto currFile = inputPath / file.path().filename();
+				auto cmd = Combine(SuffixString("ffmpeg"),
+				                   std::regex_replace(
+					                   std::regex_replace(presetCmd, inputRe,
+					                                      currFile.string()), outputRe,
+					                   (outputPath / file.path().filename()).string()));
+				printf("\n>>> %s\n\n", cmd.c_str());
+				system(cmd.c_str());
+				try
 				{
-					if (!file.is_regular_file()) continue;
-					auto currFile = dir / file.path().filename();
-					auto cmd = Combine(SuffixString("ffmpeg"),
-					                   std::regex_replace(
-						                   std::regex_replace(Preset[args.Value(preset)], inputRe,
-						                                      currFile.string()), outputRe,
-						                   (doneDir / file.path().filename()).string()));
-					printf("\n>>> %s\n\n", cmd.c_str());
-					system(cmd.c_str());
-					rename(currFile, rawDir / file.path().filename());
+					rename(currFile, rawPath / file.path().filename());
+				}
+				catch (...)
+				{
+					using namespace std::chrono_literals;
+					std::this_thread::sleep_for(1s);
+					rename(currFile, rawPath / file.path().filename());
 				}
 			}
 		}
-
+		else
+		{
+			auto cmd = Combine(SuffixString("ffmpeg"),
+				std::regex_replace(
+					std::regex_replace(presetCmd, inputRe,
+						inputPath.string()), outputRe,
+					outputPath.string()));
+			printf("\n>>> %s\n\n", cmd.c_str());
+			system(cmd.c_str());
+		}
 	}
 	catch (const std::exception& e)
 	{
-		fputs(e.what(), stderr);
-		exit(EXIT_FAILURE);
+		fputs(e.what(), stderr), exit(EXIT_FAILURE);
 	}
 }
