@@ -14,6 +14,7 @@
 #include <chrono>
 #include <exception>
 #include <any>
+#include <execution>
 
 #define ToStringFunc(x) #x
 #define ToString(x) ToStringFunc(x)
@@ -44,6 +45,34 @@ public:
 		return ss << static_cast<std::string>(cs) << Suffix;
 	}
 };
+
+template <char Prefix = ' '>
+class PrefixString : public std::string
+{
+public:
+	template <typename ...T>
+	PrefixString(T&&... arg) : std::string(std::forward<T>(arg)...) { }
+
+	friend std::ostream& operator<<(std::ostream& ss, const PrefixString<Prefix>& cs)
+	{
+		return ss << Prefix << static_cast<std::string>(cs);
+	}
+};
+
+template <char Prefix = ' ', char Suffix = ' '>
+class PrefixSuffixString : public std::string
+{
+public:
+	template <typename ...T>
+	PrefixSuffixString(T&&... arg) : std::string(std::forward<T>(arg)...) { }
+
+	friend std::ostream& operator<<(std::ostream& ss, const PrefixSuffixString<Prefix, Suffix>& cs)
+	{
+		return ss << Prefix << static_cast<std::string>(cs) << Suffix;
+	}
+};
+
+using DoubleQuotes = PrefixSuffixString<'\"', '\"'>;
 
 template <typename ...Args>
 std::string Combine(Args&&... args)
@@ -108,11 +137,11 @@ const SuffixString AnimaAvcComp = Combine(X264, PresetVerySlow, Crf15, Yuv420p10
 const SuffixString AnimaAvcCompYuv444 = Combine(X264, PresetVerySlow, Crf15, Yuv444p10le, Anima60FpsAvcParams);
 const SuffixString AnimaHevcComp = Combine(X265, PresetSlower, Crf14, Yuv420p10le, Anima60FpsHevcParams);
 
-const SuffixString Output = R"("$$$output$$$")";
-const SuffixString OutputJpg = R"("$$$output$$$.jpg")";
-const SuffixString OutputPng = R"("$$$output$$$.png")";
-const SuffixString OutputPng_d = "\"$$$input$$$" PathSeparator "%d.png\"";
-const SuffixString OutputMp4 = R"("$$$output$$$.mp4")";
+const auto Output = R"("$$$output$$$")";
+const auto OutputJpg = R"("$$$output$$$.jpg")";
+const auto OutputPng = R"("$$$output$$$.png")";
+const auto OutputPng_d = "\"$$$input$$$" PathSeparator "%d.png\"";
+const auto OutputMp4 = R"("$$$output$$$.mp4")";
 
 #pragma endregion PresetElement
 
@@ -175,6 +204,32 @@ std::unordered_map<std::string, std::string> Preset
 	return ss.str();
 }
 
+class Semaphore
+{
+public:
+	Semaphore(const int count = 0): count(count) {}
+
+	void Notify()
+	{
+		std::unique_lock<std::mutex> lock(mtx);
+		count++;
+		cv.notify_one();
+	}
+
+	void Wait()
+	{
+		std::unique_lock<std::mutex> lock(mtx);
+
+		while (count == 0) cv.wait(lock);
+		count--;
+	}
+
+private:
+	std::mutex mtx;
+	std::condition_variable cv;
+	int count;
+};
+
 class IArgument
 {
 public:
@@ -193,20 +248,20 @@ public:
 	using ValueType = T;
 	using ValueTypeOpt = std::optional<ValueType>;
 	using ConstraintFuncMsg = std::optional<std::string>;
-	using ConstraintFunc = std::function<ConstraintFuncMsg(ValueType)>;
-	using ConvertFunc = std::function<ValueType(std::string)>;
+	using ConstraintFunc = std::function<ConstraintFuncMsg(const ValueType&)>;
+	using ConvertFunc = std::function<ValueType(const std::string&)>;
 
 	Argument(
 		std::string name,
 		std::string desc = "",
-		ValueTypeOpt defaultValue = {},
-		ConstraintFunc constraint = [](auto) { return std::nullopt; },
-		ConvertFunc convert = [](auto val) { return val; }):
+		ValueTypeOpt defaultValue = std::nullopt,
+		ConstraintFunc constraint = [](const auto&) { return std::nullopt; },
+		ConvertFunc convert = [](const auto& val) { return val; }):
 			val(std::move(defaultValue)),
 			constraint(std::move(constraint)),
 			convert(std::move(convert)),
 			name(std::move(name)),
-			desc(std::move(desc)) { }
+			desc(std::move(desc)) {}
 
 	void Set(const std::string& value) override
 	{
@@ -245,7 +300,7 @@ public:
 	{
 		if (argc < 3 || (argc & 1) == 0)
 		{
-			ThrowEx(SuffixString(argv[0]), " [options]\n", GetDesc(), PresetDesc());
+			ThrowEx(SuffixString(argv[0]), " [options]\n", GetDesc());
 		}
 		for (auto i = 1; i < argc; i += 2)
 		{
@@ -260,6 +315,10 @@ public:
 	template <typename T>
 	void Add(Argument<T>& arg)
 	{
+		if (args.find(arg.GetName()) != args.end())
+		{
+			ThrowEx(PrefixString<'-'>(args.at(arg)->GetName()), ": exists");
+		}
 		args[arg.GetName()] = &arg;
 	}
 
@@ -280,11 +339,11 @@ public:
 	{
 		try
 		{
-			return std::any_cast<typename Argument<T>::ValueTypeOpt>(args.at(arg)->Get()).value();
+			return Get<T>(arg).value();
 		}
 		catch (const std::exception& e)
 		{
-			ThrowEx("-", args.at(arg)->GetName(), ": ", e.what());
+			ThrowEx(PrefixString<'-'>(args.at(arg)->GetName()), ": ", e.what());
 		}
 	}
 
@@ -314,11 +373,12 @@ Out Convert(const In& value)
 int main(int argc, char* argv[])
 {
 #define InvalidArgument(v) Argument<>::ConstraintFuncMsg{ Combine(v, ": Invalid argument") }
-#define InvalidArgumentFunc(func) [](auto v) { return (func) ? std::nullopt : InvalidArgument(v); }
-	
+#define InvalidArgumentFunc(func) [](const auto& v) { return (func) ? std::nullopt : InvalidArgument(v); }
+
 	try
 	{
 		Arguments args{};
+		
 		Argument input("i", "input");
 		Argument output("o", "output");
 		Argument<int> thread(
@@ -327,7 +387,7 @@ int main(int argc, char* argv[])
 			1,
 			{ InvalidArgumentFunc(v > 0) },
 			Convert<std::string, int>);
-		Argument custom("c", "custom");
+		Argument custom("custom", "custom");
 		Argument mode(
 			"mode", 
 			"[(f)|d] file/directory",
@@ -336,11 +396,11 @@ int main(int argc, char* argv[])
 		Argument<bool> move(
 			"move",
 			"[(y)|n] move when done",
-			{ "y" },
+			{ true },
 			{ InvalidArgumentFunc(true) },
-			{ [](auto v) { return v == "n"; } });
+			{ [](const auto& v) { return !(v == "n"); } });
 		Argument call(
-			"c",
+			"call",
 			"(ffmpeg) call ffmpeg",
 			{ "ffmpeg" });
 		Argument extension(
@@ -349,7 +409,7 @@ int main(int argc, char* argv[])
 			{ "" });
 		Argument preset(
 			"p",
-			"preset",
+			Combine("preset\n", PresetDesc()),
 			{},
 			{ InvalidArgumentFunc(Preset.find(v) != Preset.end()) });
 		
@@ -359,61 +419,97 @@ int main(int argc, char* argv[])
 		args.Add(custom);
 		args.Add(mode);
 		args.Add(move);
+		args.Add(extension);
+		args.Add(call);
 		args.Add(preset);
 
 		args.Parse(argc, argv);
 
-		const auto presetCmd = args.Get(custom) ? args.Value(custom) : Combine("ffmpeg ", Preset[args.Value(preset)]);
+		const std::regex inputRe(R"(\${3}input.?\${3})");
+		const std::regex outputRe(R"(\${3}output\${3})");
+		const std::regex extensionRe(R"("\${3}output\${3}.*?")");
+
+		const auto extendPresetCmd = std::regex_replace(
+			Combine(SuffixString(args.Value(call)), args.Get(custom) ? args.Value(custom) : Preset[args.Value(preset)]),
+			extensionRe,
+			Combine(SuffixString(args.Value(extension)), "$&"));
 		
 		const auto inputPath = std::filesystem::path(args.Value(input));
 		const auto outputPath = args.Get(output) ? std::filesystem::path(args.Value(output)) : inputPath / "done";
 
-		std::regex inputRe(R"(\${3}input\${3})");
-		std::regex outputRe(R"(\${3}output\${3})");
-
-		if (!exists(outputPath)) create_directory(outputPath);
+		create_directory(outputPath);
 		
 		if (args.Value(mode) == "f")
 		{
-			const auto rawPath = inputPath / "raw";
-			if (!exists(rawPath)) create_directory(rawPath);
+			const auto moveWhenDone = args.Value<decltype(move)::ValueType>(move);
+			const auto threadNum = args.Value<decltype(thread)::ValueType>(thread);
 			
-			for (auto& file : std::filesystem::directory_iterator(
-				inputPath, std::filesystem::directory_options::skip_permission_denied))
+			const auto rawPath = inputPath / "raw";
+			const auto logPath = inputPath / "log";
+			
+			if (moveWhenDone) create_directory(rawPath);
+			if (threadNum != 1) create_directory(logPath);
+
+			std::vector<std::filesystem::directory_entry> files{};
+			
+			for (const auto& file :
+				std::filesystem::directory_iterator(inputPath, std::filesystem::directory_options::skip_permission_denied))
 			{
-				if (!file.is_regular_file()) continue;
-				auto currFile = inputPath / file.path().filename();
-				auto cmd =
-					std::regex_replace(
-					std::regex_replace(
-							presetCmd,
-							inputRe,
-							currFile.string()),
-						outputRe,
-						(outputPath / file.path().filename()).string());
-				printf("\n>>> %s\n\n", cmd.c_str());
-				if (args.Value<decltype(move)::ValueType>(move))
+				files.push_back(file);
+			}
+
+			std::mutex idMtx{};
+			Semaphore cs(threadNum);
+			
+			std::for_each(std::execution::par, files.begin(), files.end(),
+				[&, count = 0](const auto& file) mutable
+			{
+				cs.Wait();
+				if (file.is_regular_file())
 				{
+					idMtx.lock();
+					auto id = count++;
+					idMtx.unlock();
+					
+					const auto currFile = inputPath / file.path().filename();
+					const auto cmd =
+						Combine(
+							std::regex_replace(
+								std::regex_replace(
+									extendPresetCmd,
+									inputRe,
+									currFile.string()),
+								outputRe,
+								(outputPath / file.path().filename()).string()),
+							threadNum == 1 ? "" : Combine(" >", DoubleQuotes((logPath / Combine("log.", id)).string()), " 2>&1"));
+					printf("\n>>> %s\n\n", cmd.c_str());
 					system(cmd.c_str());
-					try
+					if (moveWhenDone)
 					{
-						rename(currFile, rawPath / file.path().filename());
-					}
-					catch (...)
-					{
-						using namespace std::chrono_literals;
-						std::this_thread::sleep_for(+1s);
-						rename(currFile, rawPath / file.path().filename());
+						try
+						{
+							rename(currFile, rawPath / file.path().filename());
+						}
+						catch (...)
+						{
+							using namespace std::chrono_literals;
+							std::this_thread::sleep_for(+1s);
+							rename(currFile, rawPath / file.path().filename());
+						}
 					}
 				}
-			}
+				cs.Notify();
+			});
 		}
 		else
 		{
-			auto cmd =
+			const auto cmd =
 				std::regex_replace(
-					std::regex_replace(presetCmd, inputRe,
-						inputPath.string()), outputRe,
+					std::regex_replace(
+						extendPresetCmd,
+						inputRe,
+						inputPath.string()),
+					outputRe,
 					outputPath.string());
 			printf("\n>>> %s\n\n", cmd.c_str());
 			system(cmd.c_str());
