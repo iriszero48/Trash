@@ -219,7 +219,6 @@ public:
 	void Wait()
 	{
 		std::unique_lock<std::mutex> lock(mtx);
-
 		while (count == 0) cv.wait(lock);
 		count--;
 	}
@@ -458,11 +457,12 @@ int main(int argc, char* argv[])
 				files.push_back(file);
 			}
 
+			std::stable_sort(std::execution::par, files.begin(), files.end());
+			
 			std::mutex idMtx{};
 			Semaphore cs(threadNum);
-			
-			std::for_each(std::execution::par, files.begin(), files.end(),
-				[&, count = 0](const auto& file) mutable
+
+			auto ffmpeg = [&, count = 0](const auto& file) mutable
 			{
 				cs.Wait();
 				if (file.is_regular_file())
@@ -470,7 +470,7 @@ int main(int argc, char* argv[])
 					idMtx.lock();
 					auto id = count++;
 					idMtx.unlock();
-					
+
 					const auto currFile = inputPath / file.path().filename();
 					const auto cmd =
 						Combine(
@@ -499,7 +499,16 @@ int main(int argc, char* argv[])
 					}
 				}
 				cs.Notify();
-			});
+			};
+
+			if (threadNum == 1)
+			{
+				std::for_each(files.begin(), files.end(), ffmpeg);
+			}
+			else
+			{
+				std::for_each(std::execution::par, files.begin(), files.end(), ffmpeg);
+			}
 		}
 		else
 		{
