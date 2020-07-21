@@ -91,8 +91,8 @@ const SuffixString X264Mmal = "-c:v h264_mmal";
 
 const SuffixString FrameRate29_97 = "-framerate 29.97";
 
-const SuffixString Input = R"(-i "$$$input$$$")";
-const SuffixString InputPng_d = "-i \"$$$input$$$" PathSeparator "%d.png\"";
+const SuffixString Input = Combine("-i ", DoubleQuotes("$$$input$$$"));
+const SuffixString InputPng_d = Combine("-i ", DoubleQuotes("$$$input$$$" PathSeparator "%d.png"));
 
 const SuffixString NvInput = Combine(HwCuvid, X264Cuvid, Input);
 
@@ -137,11 +137,11 @@ const SuffixString AnimaAvcComp = Combine(X264, PresetVerySlow, Crf15, Yuv420p10
 const SuffixString AnimaAvcCompYuv444 = Combine(X264, PresetVerySlow, Crf15, Yuv444p10le, Anima60FpsAvcParams);
 const SuffixString AnimaHevcComp = Combine(X265, PresetSlower, Crf14, Yuv420p10le, Anima60FpsHevcParams);
 
-const auto Output = R"("$$$output$$$")";
-const auto OutputJpg = R"("$$$output$$$.jpg")";
-const auto OutputPng = R"("$$$output$$$.png")";
-const auto OutputPng_d = "\"$$$input$$$" PathSeparator "%d.png\"";
-const auto OutputMp4 = R"("$$$output$$$.mp4")";
+const auto Output = DoubleQuotes("$$$output$$$");
+const auto OutputJpg = DoubleQuotes("$$$output$$$.jpg");
+const auto OutputPng = DoubleQuotes("$$$output$$$.png");
+const auto OutputPng_d = DoubleQuotes("$$$input$$$" PathSeparator "%d.png");
+const auto OutputMp4 = DoubleQuotes("$$$output$$$.mp4");
 
 #pragma endregion PresetElement
 
