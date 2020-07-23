@@ -529,3 +529,5 @@ int main(int argc, char* argv[])
 		fputs(e.what(), stderr), exit(EXIT_FAILURE);
 	}
 }
+// linux may need tbb
+// g++ fs.cpp -o fs -std=c++17 -ltbb -O2
