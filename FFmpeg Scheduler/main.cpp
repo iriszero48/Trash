@@ -130,8 +130,9 @@ const SuffixString Anima60FpsAvcParams = R"(-x264-params "mbtree=1:aq-mode=3:psy
 const SuffixString Anima60FpsHevcParams = R"(-x265-params "deblock='-1:-1':ctu=32:qg-size=8:pbratio=1.2:cbqpoffs=-2:crqpoffs=-2:no-sao=1:me=3:subme=5:merange=38:b-intra=1:limit-tu=4:no-amp=1:ref=4:weightb=1:keyint=360:min-keyint=1:bframes=6:aq-mode=1:aq-strength=0.8:rd=5:psy-rd=2.0:psy-rdoq=1.0:rdoq-level=2:no-open-gop=1:rc-lookahead=180:scenecut=40:qcomp=0.65:no-strong-intra-smoothing=1:")";
 
 const SuffixString AvcLossLess = Combine(X264, PresetUltraFast, Qp0);
+const SuffixString AvcLossLessP10 = Combine(AvcLossLess, Yuv420p10le);
 const SuffixString AvcVisuallyLossLess = Combine(X264, Crf17);
-const SuffixString AvcVisuallyLossLessP10 = Combine(X264, Crf17, Yuv420p10le);
+const SuffixString AvcVisuallyLossLessP10 = Combine(AvcVisuallyLossLess, Yuv420p10le);
 const SuffixString NvencAvcLossLess = Combine(X264Nvenc, PresetLossLessHp, Qp0);
 const SuffixString AnimaAvcComp = Combine(X264, PresetVerySlow, Crf15, Yuv420p10le, Anima60FpsAvcParams);
 const SuffixString AnimaAvcCompYuv444 = Combine(X264, PresetVerySlow, Crf15, Yuv444p10le, Anima60FpsAvcParams);
@@ -155,9 +156,9 @@ std::unordered_map<std::string, std::string> Preset
 	{"anima,hevc,comp,colorspace=bt709", Combine(InputCopy, AnimaHevcComp, ColorSpaceBt709, Output)},
 	{"anima,hevc,comp,bt709", Combine(InputCopy, AnimaHevcComp, Bt709, Output)},
 
-	{"anima,upto60fps,avc,ll", Combine(InputCopy, ScaleUp60Fps, AvcLossLess, Output)},
-	{"anima,upto60fps,avc,ll,colorspace=bt709", Combine(InputCopy, ScaleUp60Fps, AvcLossLess, ColorSpaceBt709, Output)},
-	{"anima,upto60fps,avc,ll,bt709", Combine(InputCopy, ScaleUp60Fps, AvcLossLess, Bt709, Output)},
+	{"anima,upto60fps,avc,ll", Combine(InputCopy, ScaleUp60Fps, AvcLossLessP10, Output)},
+	{"anima,upto60fps,avc,ll,colorspace=bt709", Combine(InputCopy, ScaleUp60Fps, AvcLossLessP10, ColorSpaceBt709, Output)},
+	{"anima,upto60fps,avc,ll,bt709", Combine(InputCopy, ScaleUp60Fps, AvcLossLessP10, Bt709, Output)},
 
 	{"anima,upto60fps,avc,comp", Combine(InputCopy, ScaleUp60Fps, AnimaAvcComp, Output)},
 	{"anima,upto60fps,avc,comp,colorspace=bt709", Combine(InputCopy, ScaleUp60Fps, AnimaAvcComp, ColorSpaceBt709, Output)},
@@ -516,9 +517,10 @@ int main(int argc, char* argv[])
 			{
 				if (args.Value<decltype(move)::ValueType>(move))
 				{
-					for (; !files.empty(); files = GetFiles(inputPath))
+					for (; !files.empty();
+						files = GetFiles(inputPath),
+						std::stable_sort(std::execution::par_unseq, files.begin(), files.end()))
 					{
-						std::stable_sort(std::execution::par_unseq, files.begin(), files.end());
 						ffmpeg(files[0]);
 					}
 				}
