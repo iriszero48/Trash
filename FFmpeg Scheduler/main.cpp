@@ -207,16 +207,16 @@ std::unordered_map<std::string, std::string> Preset
 class Semaphore
 {
 public:
-	Semaphore(const int count = 0): count(count) {}
+	Semaphore(const int count): count(count) {}
 
-	void Notify()
+	void Release()
 	{
 		std::unique_lock<std::mutex> lock(mtx);
 		count++;
 		cv.notify_one();
 	}
 
-	void Wait()
+	void WaitOne()
 	{
 		std::unique_lock<std::mutex> lock(mtx);
 		while (count == 0) cv.wait(lock);
@@ -369,6 +369,23 @@ Out Convert(const In& value)
 	return res;
 }
 
+template<typename Element = std::filesystem::directory_entry, typename Container = std::vector<Element>>
+Container GetFiles(
+	const std::filesystem::path& path,
+	std::function<void(Container&, Element)> insertFunc = [](auto& files, const auto& file) {files.push_back(file); })
+{
+	Container files{};
+	for (const auto& file :
+		std::filesystem::directory_iterator(path, std::filesystem::directory_options::skip_permission_denied))
+	{
+		if (file.is_regular_file())
+		{
+			insertFunc(files, file);
+		}
+	}
+	return files;
+}
+
 int main(int argc, char* argv[])
 {
 #define InvalidArgument(v) Argument<>::ConstraintFuncMsg{ Combine(v, ": Invalid argument") }
@@ -380,6 +397,7 @@ int main(int argc, char* argv[])
 		
 		Argument input("i", "input");
 		Argument output("o", "output");
+		Argument log("l", "log path");
 		Argument<int> thread(
 			"t",
 			"thread",
@@ -414,6 +432,7 @@ int main(int argc, char* argv[])
 		
 		args.Add(input);
 		args.Add(output);
+		args.Add(log);
 		args.Add(thread);
 		args.Add(custom);
 		args.Add(mode);
@@ -444,66 +463,69 @@ int main(int argc, char* argv[])
 			const auto threadNum = args.Value<decltype(thread)::ValueType>(thread);
 			
 			const auto rawPath = inputPath / "raw";
-			const auto logPath = inputPath / "log";
+			const auto logPath = args.Get(log) ? std::filesystem::path(args.Value(log)) : inputPath / "log";
 			
 			if (moveWhenDone) create_directory(rawPath);
 			if (threadNum != 1) create_directory(logPath);
 
-			std::vector<std::filesystem::directory_entry> files{};
-			
-			for (const auto& file :
-				std::filesystem::directory_iterator(inputPath, std::filesystem::directory_options::skip_permission_denied))
-			{
-				files.push_back(file);
-			}
+			auto files = GetFiles(inputPath);
 
-			std::stable_sort(std::execution::par, files.begin(), files.end());
+			std::stable_sort(std::execution::par_unseq, files.begin(), files.end());
 			
 			std::mutex idMtx{};
 			Semaphore cs(threadNum);
 
 			auto ffmpeg = [&, count = 0](const auto& file) mutable
 			{
-				cs.Wait();
-				if (file.is_regular_file())
-				{
-					idMtx.lock();
-					auto id = count++;
-					idMtx.unlock();
+				cs.WaitOne();
+				idMtx.lock();
+				auto id = count++;
+				idMtx.unlock();
 
-					const auto currFile = inputPath / file.path().filename();
-					const auto cmd =
-						Combine(
+				const auto currFile = inputPath / file.path().filename();
+				const auto cmd =
+					Combine(
+						std::regex_replace(
 							std::regex_replace(
-								std::regex_replace(
-									extendPresetCmd,
-									inputRe,
-									currFile.string()),
-								outputRe,
-								(outputPath / file.path().filename()).string()),
-							threadNum == 1 ? "" : Combine(" >", DoubleQuotes((logPath / Combine("log.", id)).string()), " 2>&1"));
-					printf("\n>>> %s\n\n", cmd.c_str());
-					system(cmd.c_str());
-					if (moveWhenDone)
+								extendPresetCmd,
+								inputRe,
+								currFile.string()),
+							outputRe,
+							(outputPath / file.path().filename()).string()),
+						threadNum == 1 ? "" : Combine(" >", DoubleQuotes((logPath / Combine("log.", id)).string()), " 2>&1"));
+				printf("\n>>> %s\n\n", cmd.c_str());
+				system(cmd.c_str());
+				
+				if (moveWhenDone)
+				{
+					try
 					{
-						try
-						{
-							rename(currFile, rawPath / file.path().filename());
-						}
-						catch (...)
-						{
-							using namespace std::chrono_literals;
-							std::this_thread::sleep_for(+1s);
-							rename(currFile, rawPath / file.path().filename());
-						}
+						rename(currFile, rawPath / file.path().filename());
+					}
+					catch (...)
+					{
+						using namespace std::chrono_literals;
+						std::this_thread::sleep_for(+1s);
+						rename(currFile, rawPath / file.path().filename());
 					}
 				}
-				cs.Notify();
+				cs.Release();
 			};
 
 			if (threadNum == 1)
 			{
-				std::for_each(files.begin(), files.end(), ffmpeg);
+				if (args.Value<decltype(move)::ValueType>(move))
+				{
+					for (; !files.empty(); files = GetFiles(inputPath))
+					{
+						std::stable_sort(std::execution::par_unseq, files.begin(), files.end());
+						ffmpeg(files[0]);
+					}
+				}
+				else
+				{
+					std::for_each(files.begin(), files.end(), ffmpeg);
+				}
 			}
 			else
 			{
