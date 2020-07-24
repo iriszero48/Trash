@@ -362,7 +362,7 @@ private:
 };
 
 template<typename In = std::string, typename Out = int>
-Out Convert(const In& value)
+[[nodiscard]] Out Convert(const In& value)
 {
 	Out res;
 	std::from_chars(value.data(), value.data() + value.size(), res);
@@ -370,9 +370,9 @@ Out Convert(const In& value)
 }
 
 template<typename Element = std::filesystem::directory_entry, typename Container = std::vector<Element>>
-Container GetFiles(
+[[nodiscard]] Container GetFiles(
 	const std::filesystem::path& path,
-	std::function<void(Container&, Element)> insertFunc = [](auto& files, const auto& file) {files.push_back(file); })
+	std::function<void(Container&, Element)> insertFunc = [](auto& files, const auto& file) { files.push_back(file); })
 {
 	Container files{};
 	for (const auto& file :
