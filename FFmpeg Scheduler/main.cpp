@@ -101,12 +101,16 @@ const SuffixString X264 = "-c:v libx264";
 const SuffixString X265 = "-c:v libx265";
 const SuffixString X264Nvenc = "-c:v h264_nvenc";
 const SuffixString X264Omx = "-c:v h264_omx";
+const SuffixString Aac = "-c:a aac";
 
 const SuffixString InputCopy = Combine(Input, copy);
 
+const SuffixString LoudNorm = "-filter:a loudnorm";
 const SuffixString ScaleUp60Fps = R"(-filter:v "minterpolate='fps=60:mi_mode=mci:mc_mode=aobmc:me_mode=bidir:me=epzs:vsbmc=1:scd=fdiff'")";
-const SuffixString Size100X100 = "-s 100x100";
 const SuffixString Image2 = "-f image2";
+
+const SuffixString Size100X100 = "-s 100x100";
+const SuffixString Size720p = "-s 1280x720";
 
 const SuffixString PresetLossLessHp = "-preset losslesshp";
 const SuffixString PresetUltraFast = "-preset ultrafast";
@@ -114,11 +118,20 @@ const SuffixString PresetSlower = "-preset slower";
 const SuffixString PresetVerySlow = "-preset veryslow";
 const SuffixString PresetPlacebo = "-preset placebo";
 
+const SuffixString TuneFilm = "-tune film";
+
+const SuffixString AudioBitrate128k = "-b:a 128k";
+
+const SuffixString AudioS16 = "-sample_fmt s16";
+
 const SuffixString Qp0 = "-qp 0";
+
 const SuffixString Crf14 = "-crf 14";
 const SuffixString Crf15 = "-crf 15";
 const SuffixString Crf17 = "-crf 17";
+const SuffixString Crf19 = "-crf 17";
 
+const SuffixString Yuv420p = "-pix_fmt yuv420p";
 const SuffixString Yuv420p10le = "-pix_fmt yuv420p10le";
 const SuffixString Yuv444p10le = "-pix_fmt yuv444p10le";
 
@@ -126,14 +139,19 @@ const SuffixString ColorSpaceBt709 = "-colorspace 1";
 const SuffixString Bt709 = Combine(ColorSpaceBt709, "-color_primaries 1 -color_trc 1");
 const SuffixString Smpte170m = "-colorspace 6 -color_trc 6 -color_primaries 6";
 
+const SuffixString Anima60FpsAvc720pParams = R"(-x264-params "deblock='0:0':keyint=600:min-keyint=1:ref=9:qcomp=0.7:rc-lookahead=180:aq-strength=0.9:merange=16:me=tesa:psy-rd='0:0.20':no-fast-pskip=1")";
 const SuffixString Anima60FpsAvcParams = R"(-x264-params "mbtree=1:aq-mode=3:psy-rd='0.6:0.15':aq-strength=0.8:rc-lookahead=180:qcomp=0.75:deblock='-1:-1':keyint=600:min-keyint=1:bframes=8:ref=13:me=tesa:no-fast-pskip=1")";
-const SuffixString Anima60FpsHevcParams = R"(-x265-params "deblock='-1:-1':ctu=32:qg-size=8:pbratio=1.2:cbqpoffs=-2:crqpoffs=-2:no-sao=1:me=3:subme=5:merange=38:b-intra=1:limit-tu=4:no-amp=1:ref=4:weightb=1:keyint=360:min-keyint=1:bframes=6:aq-mode=1:aq-strength=0.8:rd=5:psy-rd=2.0:psy-rdoq=1.0:rdoq-level=2:no-open-gop=1:rc-lookahead=180:scenecut=40:qcomp=0.65:no-strong-intra-smoothing=1:")";
+const SuffixString Anima60FpsHevcParams = R"(-x265-params "deblock='-1:-1':ctu=32:qg-size=8:pbratio=1.2:cbqpoffs=-2:crqpoffs=-2:no-sao=1:me=3:subme=5:merange=38:b-intra=1:limit-tu=4:no-amp=1:ref=4:weightb=1:keyint=600:min-keyint=1:bframes=6:aq-mode=1:aq-strength=0.8:rd=5:psy-rd=2.0:psy-rdoq=1.0:rdoq-level=2:no-open-gop=1:rc-lookahead=180:scenecut=40:qcomp=0.65:no-strong-intra-smoothing=1:")";
+
+const SuffixString AvcAudioComp = Combine(Aac, AudioBitrate128k/*, AudioS16*/);
 
 const SuffixString AvcLossLess = Combine(X264, PresetUltraFast, Qp0);
 const SuffixString AvcLossLessP10 = Combine(AvcLossLess, Yuv420p10le);
 const SuffixString AvcVisuallyLossLess = Combine(X264, Crf17);
 const SuffixString AvcVisuallyLossLessP10 = Combine(AvcVisuallyLossLess, Yuv420p10le);
 const SuffixString NvencAvcLossLess = Combine(X264Nvenc, PresetLossLessHp, Qp0);
+const SuffixString NvencAvc720pComp = Combine(X264Nvenc, PresetLossLessHp, Qp0);
+const SuffixString AnimaAvc720pComp = Combine(X264, PresetVerySlow, Crf19, Yuv420p, TuneFilm, Anima60FpsAvc720pParams);
 const SuffixString AnimaAvcComp = Combine(X264, PresetVerySlow, Crf15, Yuv420p10le, Anima60FpsAvcParams);
 const SuffixString AnimaAvcCompYuv444 = Combine(X264, PresetVerySlow, Crf15, Yuv444p10le, Anima60FpsAvcParams);
 const SuffixString AnimaHevcComp = Combine(X265, PresetSlower, Crf14, Yuv420p10le, Anima60FpsHevcParams);
@@ -148,6 +166,8 @@ const auto OutputMp4 = DoubleQuotes("$$$output$$$.mp4");
 
 std::unordered_map<std::string, std::string> Preset
 {
+	{"anima,avc,720p,comp,colorspace=bt709", Combine(InputCopy, Size720p, AvcAudioComp, AnimaAvc720pComp, ColorSpaceBt709, Output)},
+	
 	{"anima,avc,comp", Combine(InputCopy, AnimaAvcComp, Output)},
 	{"anima,avc,comp,colorspace=bt709", Combine(InputCopy, AnimaAvcComp, ColorSpaceBt709, Output)},
 	{"anima,avc,comp,bt709", Combine(InputCopy, AnimaAvcComp, Bt709, Output)},
@@ -159,7 +179,7 @@ std::unordered_map<std::string, std::string> Preset
 	{"anima,upto60fps,avc,ll", Combine(InputCopy, ScaleUp60Fps, AvcLossLessP10, Output)},
 	{"anima,upto60fps,avc,ll,colorspace=bt709", Combine(InputCopy, ScaleUp60Fps, AvcLossLessP10, ColorSpaceBt709, Output)},
 	{"anima,upto60fps,avc,ll,bt709", Combine(InputCopy, ScaleUp60Fps, AvcLossLessP10, Bt709, Output)},
-
+	
 	{"anima,upto60fps,avc,comp", Combine(InputCopy, ScaleUp60Fps, AnimaAvcComp, Output)},
 	{"anima,upto60fps,avc,comp,colorspace=bt709", Combine(InputCopy, ScaleUp60Fps, AnimaAvcComp, ColorSpaceBt709, Output)},
 	{"anima,upto60fps,avc,comp,bt709", Combine(InputCopy, ScaleUp60Fps, AnimaAvcComp, Bt709, Output)},
@@ -176,6 +196,8 @@ std::unordered_map<std::string, std::string> Preset
 	{"avc,bt709", Combine(Input, X264, Bt709, Output)},
 	{"avc,placebo", Combine(Input, X264, PresetPlacebo, Output)},
 
+	{"avc,720p,nvenc,colorspace=bt709", Combine(InputCopy, Size720p, AvcAudioComp, X264Nvenc, Yuv420p, ColorSpaceBt709, Output)},
+	
 	{"nv,avc", Combine(NvInput, X264Nvenc, Output)},
 	{"nv,avc,ll", Combine(NvInput, NvencAvcLossLess, Output)},
 
@@ -191,6 +213,8 @@ std::unordered_map<std::string, std::string> Preset
 	{"vid2png%d", Combine(Input, Image2, OutputPng_d)},
 	
 	{"png%d2mp4,29.97fps,p10le", Combine(FrameRate29_97, InputPng_d, Yuv420p10le, Output)},
+
+	{"loudnorm", Combine(InputCopy, LoudNorm, Output)},
 
 	{"i", Combine(Input)}
 };
@@ -421,9 +445,13 @@ int main(int argc, char* argv[])
 			"call",
 			"(ffmpeg) call ffmpeg",
 			{ "ffmpeg" });
-		Argument extension(
-			"e",
-			"extension",
+		Argument inputExtension(
+			"ie",
+			"input extension",
+			{ "" });
+		Argument outputExtension(
+			"oe",
+			"output extension",
 			{ "" });
 		Argument preset(
 			"p",
@@ -438,7 +466,8 @@ int main(int argc, char* argv[])
 		args.Add(custom);
 		args.Add(mode);
 		args.Add(move);
-		args.Add(extension);
+		args.Add(inputExtension);
+		args.Add(outputExtension);
 		args.Add(call);
 		args.Add(preset);
 
@@ -446,16 +475,20 @@ int main(int argc, char* argv[])
 
 		const std::regex inputRe(R"(\${3}input.?\${3})");
 		const std::regex outputRe(R"(\${3}output\${3})");
-		const std::regex extensionRe(R"("\${3}output\${3}.*?")");
+		const std::regex inputExtensionRe(R"("\${3}output\${3}")");
+		const std::regex outputExtensionRe(R"("\${3}output\${3}.*?")");
 
 		const auto extendPresetCmd = std::regex_replace(
-			Combine(SuffixString(args.Value(call)), args.Get(custom) ? args.Value(custom) : Preset[args.Value(preset)]),
-			extensionRe,
-			Combine(SuffixString(args.Value(extension)), "$&"));
+			std::regex_replace(
+				Combine(SuffixString(args.Value(call)), args.Get(custom) ? args.Value(custom) : Preset[args.Value(preset)]),
+				outputExtensionRe,
+				Combine(SuffixString(args.Value(outputExtension)), "$&")),
+			inputExtensionRe,
+			Combine(SuffixString(args.Value(inputExtension)), "$&"));
 		
 		const auto inputPath = std::filesystem::path(args.Value(input));
 		const auto outputPath = args.Get(output) ? std::filesystem::path(args.Value(output)) : inputPath / "done";
-
+		
 		create_directory(outputPath);
 		
 		if (args.Value(mode) == "f")
