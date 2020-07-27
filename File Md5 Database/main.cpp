@@ -454,7 +454,7 @@ void FileMd5DatabaseBuilder(const std::string& deviceName, const std::string& pa
 							size = 0;
 						}
 						const auto modificationTime = FileLastModified(nativePath);
-						fmd.insert(KV(fullPath, std::make_tuple(md5, size, FileLastModified(file->path().native()))));
+						fmd[fullPath] = std::make_tuple(md5, size, FileLastModified(file->path().native()));
 						if (logOutput) Log(file->path().native().c_str(), md5.c_str(), static_cast<uint64_t>(size), modificationTime.c_str());
 					}
 					catch (const std::exception& e)
@@ -591,7 +591,7 @@ void FileMd5DatabaseQuery(Database& fmd, const std::string& queryMethod, const s
 			{
 				if (md5.find(m) == md5.end())
 				{
-					md5.insert(std::make_pair(m, s));
+					md5[m] = s;
 				}
 				else
 				{
@@ -724,9 +724,9 @@ std::string& ReplaceString(std::string& str, const std::string& search, const st
 	return str;
 }
 
-void Export(Database& fmd, const std::string& path, const std::string& fotmat)
+void Export(Database& fmd, const std::string& path, const std::string& format)
 {
-	if (fotmat == "csv")
+	if (format == "csv")
 	{
 		CsvFile csv(path, ",");
 		for (const auto& pair : fmd)
