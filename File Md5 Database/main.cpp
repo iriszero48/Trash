@@ -826,3 +826,4 @@ int main(int argc, char* argv[])
 }
 // g++ FileMd5Database.cpp -o FileMd5Database.out -std=c++17 -lboost_serialization -lboost_locale -lboost_filesystem -fopenmp -lboost_system -O2
 // g++ FileMd5Database.cpp -o FileMd5Database.out -std=c++17 -l:libboost_serialization.a -l:libboost_locale.a -l:libboost_filesystem.a -fopenmp -l:libboost_system.a -O2
+// g++ 8 needs -lstdc++fs
