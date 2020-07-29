@@ -78,6 +78,7 @@ public:
 Parameter Error
 Usage: databaseFilePath command [options]
 	build deviceName rootPath [format[binary|text]] [logOutput[default:true|false]]
+	add deviceName filePath [format[binary|text]] [logOutput[default:true|false]]
 	query queryMethod[contain|startWith|regex] queryData[path|md5|size|fileModificationTime] keyword [format[binary|text]] [limit(default:100))]
 	concat format[binary|text] sourceDatabaseFile1 sourceDatabaseFile2 [sourceDatabaseFile...]
 	convert destFormat[text|binary] sourceFormat[text|binary] sourceDatabaseFile
@@ -413,6 +414,33 @@ std::string FileLastModified(const NativeStringType& path)
 	}
 }
 
+inline void FileMd5DatabaseAdd(const std::string& deviceName, const std::filesystem::path& file, Database& fmd, const bool logOutput = true)
+{
+	try
+	{
+		const auto nativePath = PathPerfix file.native();
+		const auto fullPath = deviceName + ":" + file.u8string();
+		const auto md5 = Md5File(nativePath);
+		uintmax_t size;
+		try
+		{
+			size = file_size(file);
+		}
+		catch (const std::exception& e)
+		{
+			LogErr(file.native().c_str(), e.what());
+			size = 0;
+		}
+		const auto modificationTime = FileLastModified(nativePath);
+		fmd[fullPath] = std::make_tuple(md5, size, modificationTime);
+		if (logOutput) Log(file.native().c_str(), md5.c_str(), static_cast<uint64_t>(size), modificationTime.c_str());
+	}
+	catch (const std::exception& e)
+	{
+		LogErr(file.native().c_str(), e.what());
+	}
+}
+
 void FileMd5DatabaseBuilder(const std::string& deviceName, const std::string& path, Database& fmd, const bool logOutput = true)
 {
 	std::error_code errorCode;
@@ -438,29 +466,7 @@ void FileMd5DatabaseBuilder(const std::string& deviceName, const std::string& pa
 				}
 				if (file->is_regular_file())
 				{
-					try
-					{
-						const auto nativePath = PathPerfix file->path().native();
-						const auto fullPath = deviceName + ":" + file->path().u8string();
-						const auto md5 = Md5File(nativePath);
-						uintmax_t size;
-						try
-						{
-							size = file->file_size();
-						}
-						catch (const std::exception& e)
-						{
-							LogErr(file->path().native().c_str(), e.what());
-							size = 0;
-						}
-						const auto modificationTime = FileLastModified(nativePath);
-						fmd[fullPath] = std::make_tuple(md5, size, FileLastModified(file->path().native()));
-						if (logOutput) Log(file->path().native().c_str(), md5.c_str(), static_cast<uint64_t>(size), modificationTime.c_str());
-					}
-					catch (const std::exception& e)
-					{
-						LogErr(file->path().native().c_str(), e.what());
-					}
+					FileMd5DatabaseAdd(deviceName, file->path(), fmd, logOutput);
 				}
 				else if (file->is_directory())
 				{
@@ -764,6 +770,21 @@ int main(int argc, char* argv[])
 #endif
 				
 				FileMd5DatabaseBuilder(deviceName, rootPath, FileMd5Database, logOutput == "true");
+				Serialization(FileMd5Database, databaseFilePath, format);
+			}
+			else if (command == "add" && argc <= 6)
+			{
+				const std::string deviceName = argv[3];
+				const std::string filePath = argv[4];
+				const std::string format = argc == 6 ? argv[5] : "";
+				const std::string logOutput = argc == 7 ? argv[6] : "true";
+				if (std::filesystem::exists(databaseFilePath)) Deserialization(FileMd5Database, databaseFilePath, format);
+
+#if (defined _WIN32 || defined _WIN64)
+				setlocale(LC_ALL, "");
+#endif
+
+				FileMd5DatabaseAdd(deviceName, filePath, FileMd5Database, logOutput == "true");
 				Serialization(FileMd5Database, databaseFilePath, format);
 			}
 			else if (command == "query" && argc >= 6 && argc <= 7)
