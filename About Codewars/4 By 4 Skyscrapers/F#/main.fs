@@ -1,4 +1,5 @@
 let solvePuzzle (clues : int[]) : int[][] =
+    // let con = List.fold (fun a b -> List.collect (fun x -> List.map (fun y -> x@[y]) b) a) [[]] (List.replicate 4 [1..4]) |> List.filter (Seq.distinct >> Seq.length >> (=) 4)
     let con = [|
         [|1; 2; 3; 4|];
         [|1; 2; 4; 3|];[|1; 3; 2; 4|];[|1; 3; 4; 2|];[|2; 1; 3; 4|];[|2; 3; 1; 4|];[|2; 3; 4; 1|];
