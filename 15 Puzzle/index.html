@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>15 Puzzle</title>
+    <script type="application/javascript">
+        var board, zx, zy, clicks, possibles, oldzx = -1, oldzy = -1;
+        let imgDir = '';
+        let nilImg = 'nil.jpg';
+        let getImg = x => imgDir + x + '.jpg';
+        let bg = x => 'background:url(' + x + ') no-repeat center;background-size: 100%;';
+        let bgNil = bg(nilImg);
+        let rand = items => items[~~(items.length * Math.random())];
+        function getPossibles() {
+            var ii, jj, cx = [-1, 0, 1, 0], cy = [0, -1, 0, 1];
+            possibles = [];
+            for( var i = 0; i < 4; i++ ) {
+                ii = zx + cx[i]; jj = zy + cy[i];
+                if( ii < 0 || ii > 3 || jj < 0 || jj > 3 ) continue;
+                possibles.push( { x: ii, y: jj } );
+            }
+        }
+        function updateBtns() {
+            var b, v, id;
+            for( var j = 0; j < 4; j++ ) {
+                for( var i = 0; i < 4; i++ ) {
+                    id = "btn" + ( i + j * 4 );
+                    b = document.getElementById( id );
+                    v = board[i][j];
+                    if( v < 16 ) {
+                        b.style = bg(getImg(v));
+                        b.className = "button"
+                    }
+                    else {
+                        b.style = bgNil;
+                        b.className = "empty";
+                    }
+                }
+            }
+        }
+        function shuffle() {
+            var v = 0, t;
+            do {
+                getPossibles();
+                while( true ) {
+                    t = possibles[Math.floor( Math.random() * possibles.length )];
+                    if( t.x != oldzx || t.y != oldzy ) break;
+                }
+                oldzx = zx; oldzy = zy;
+                board[zx][zy] = board[t.x][t.y];
+                zx = t.x; zy = t.y;
+                board[zx][zy] = 16;
+            } while( ++v < 200 );
+        }
+        function restart() {
+            shuffle();
+            clicks = 0;
+            imgDir = rand([...Array(42).keys()]) + '/';
+            updateBtns();
+        }
+        function checkFinished() {
+            var a = 0;
+            for( var j = 0; j < 4; j++ ) {
+                for( var i = 0; i < 4; i++ ) {
+                    if( board[i][j] < a ) return false;
+                    a = board[i][j];
+                }
+            }
+            return true;
+        }
+        function btnHandle( e ) {
+            getPossibles();
+            var c = e.target.i, r = e.target.j, p = -1;
+            for( var i = 0; i < possibles.length; i++ ) {
+                if( possibles[i].x == c && possibles[i].y == r ) {
+                    p = i;
+                    break;
+                }
+            }
+            if( p > -1 ) {
+                clicks++;
+                var t = possibles[p];
+                board[zx][zy] = board[t.x][t.y];
+                zx = t.x; zy = t.y;
+                board[zx][zy] = 16;
+                updateBtns();
+                if( checkFinished() ) {
+                    document.getElementById("btn" + 16).style = bg(getImg(16));
+                    setTimeout(function(){
+                        alert('');
+                        restart();
+                    }, 5);
+                }
+            }
+        }
+        function createBoard() {
+            board = new Array( 4 );
+            for( var i = 0; i < 4; i++ ) {
+                board[i] = new Array( 4 );
+            }
+            for( var j = 0; j < 4; j++ ) {
+                for( var i = 0; i < 4; i++ ) {
+                    board[i][j] = ( i + j * 4 ) + 1;
+                }
+            }
+            zx = zy = 3;
+            board[zx][zy] = 16;
+        }
+        function createBtns() {
+            var b, d = document.createElement( "div" );
+            d.className += "board";
+            document.body.appendChild( d );
+            for( var j = 0; j < 4; j++ ) {
+                for( var i = 0; i < 4; i++ ) {
+                    b = document.createElement( "button" );
+                    b.id = "btn" + ( i + j * 4 );
+                    b.i = i; b.j = j;
+                    b.addEventListener( "click", btnHandle, false );
+                    d.appendChild( b );
+                }
+            }
+        }
+        function start() {
+            createBtns();
+            createBoard();
+            restart();
+        }
+    </script>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 8vh 0 0;
+            background: #222;
+            color: #111
+        }
+        .txt {
+            color: #fff;
+            text-align: center;
+            font-size: 5vh
+        }
+        .board {
+            padding: 0;
+            margin:auto;
+            width:38.4vh;
+            height:21.6vh
+        }
+        .button, .empty {
+            height:5.4vh;
+            width:9.6vh;
+            vertical-align:middle;
+            cursor:pointer;
+        }
+    </style>
+</head>
+<body onload="start()">
+
+</body>
+</html>
