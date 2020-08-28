@@ -28,11 +28,13 @@
                     b = document.getElementById( id );
                     v = board[i][j];
                     if( v < 16 ) {
-                        b.style = bg(getImg(v));
+                        b.src = getImg(v);
+                        b.hidden = false;
                         b.className = "button"
                     }
                     else {
-                        b.style = bgNil;
+                        b.src = getImg(v);
+                        b.hidden = true;
                         b.className = "empty";
                     }
                 }
@@ -55,7 +57,8 @@
         function restart() {
             shuffle();
             clicks = 0;
-            imgDir = rand([...Array(42).keys()]) + '/';
+            //imgDir =  'img/' + rand([...Array(42).keys()]) + '/';
+            imgDir = 999 + '/';
             updateBtns();
         }
         function checkFinished() {
@@ -85,11 +88,11 @@
                 board[zx][zy] = 16;
                 updateBtns();
                 if( checkFinished() ) {
-                    document.getElementById("btn" + 16).style = bg(getImg(16));
+                    [...Array(16).keys()].map(x=>document.getElementById("btn"+x).hidden = false);
                     setTimeout(function(){
-                        alert('');
+                        alert('15 Puzzle');
                         restart();
-                    }, 5);
+                    }, 3);
                 }
             }
         }
@@ -112,11 +115,13 @@
             document.body.appendChild( d );
             for( var j = 0; j < 4; j++ ) {
                 for( var i = 0; i < 4; i++ ) {
-                    b = document.createElement( "button" );
+                    let con = document.createElement("div");
+                    b = document.createElement( "img" );
                     b.id = "btn" + ( i + j * 4 );
                     b.i = i; b.j = j;
                     b.addEventListener( "click", btnHandle, false );
-                    d.appendChild( b );
+                    con.appendChild(b);
+                    d.appendChild(con);
                 }
             }
         }
@@ -128,8 +133,6 @@
     </script>
     <style>
         html, body {
-            margin: 0;
-            padding: 8vh 0 0;
             background: #222;
             color: #111
         }
@@ -139,16 +142,21 @@
             font-size: 5vh
         }
         .board {
-            padding: 0;
-            margin:auto;
-            width:38.4vh;
-            height:21.6vh
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 1fr);
         }
         .button, .empty {
-            height:5.4vh;
-            width:9.6vh;
             vertical-align:middle;
             cursor:pointer;
+        }
+        div {
+            float: left;
+            border: 1px black solid;
+        }
+        img {
+            width: 100%;
+            height: 100%;
         }
     </style>
 </head>
