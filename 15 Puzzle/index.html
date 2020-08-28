@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,height=device-height,initial-scale=1.0"/>
     <title>15 Puzzle</title>
     <script type="application/javascript">
         var board, zx, zy, clicks, possibles, oldzx = -1, oldzy = -1;
@@ -140,9 +139,8 @@
             font-size: 5vh
         }
         .board {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            grid-template-rows: repeat(4, 1fr);
+            display: flex;
+            flex-flow: wrap;
         }
         .button, .empty {
             vertical-align:middle;
@@ -153,6 +151,8 @@
         .child {
             float: left;
             border: 1px black solid;
+            width: 25%;
+            box-sizing: border-box;
         }
     </style>
 </head>
