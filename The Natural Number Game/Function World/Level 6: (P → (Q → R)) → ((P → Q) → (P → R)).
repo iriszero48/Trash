@@ -1,0 +1,5 @@
+intros f1 f2 p,
+have j := f1 p,
+apply j,
+apply f2,
+exact p,
