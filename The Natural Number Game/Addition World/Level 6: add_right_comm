@@ -1,0 +1,13 @@
+induction c with d hd,
+rw add_comm,
+rw add_comm (a + 0),
+rw zero_add,
+rw add_zero,
+rw add_comm,
+refl,
+
+rw add_succ,
+rw add_succ,
+rw succ_add,
+rw hd,
+refl,
