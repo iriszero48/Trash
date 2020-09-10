@@ -1,0 +1,6 @@
+intros f1 f2 p,
+apply f1,
+exact p,
+
+apply f2,
+exact p,
