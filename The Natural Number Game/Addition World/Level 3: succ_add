@@ -1,0 +1,9 @@
+induction b with d hd,
+rw add_zero,
+rw add_zero,
+refl,
+
+rw add_succ,
+rw hd,
+rw add_succ,
+refl,
