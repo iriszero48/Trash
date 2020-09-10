@@ -1,0 +1,13 @@
+intros cpq cqr,
+cases cpq with pq qp,
+cases cqr with qr rq,
+split,
+intro p,
+apply qr,
+apply pq,
+exact p,
+
+intro r,
+apply qp,
+apply rq,
+exact r,
