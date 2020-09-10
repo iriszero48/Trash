@@ -1,0 +1,7 @@
+induction n with d hd,
+rw zero_add,
+refl,
+
+rw succ_add,
+rw hd,
+refl,
