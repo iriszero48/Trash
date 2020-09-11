@@ -1,0 +1,3 @@
+intro ab,
+cases ab with a b,
+refl,
