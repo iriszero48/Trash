@@ -1,0 +1,9 @@
+intro atbt,
+induction t with d hd,
+cases atbt with a b,
+rw add_zero at atbt,
+refl,
+
+rw add_succ at atbt,
+rw add_succ at atbt,
+cc,
