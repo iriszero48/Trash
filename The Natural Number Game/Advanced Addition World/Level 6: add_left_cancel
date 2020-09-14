@@ -1,0 +1,9 @@
+intro tatb,
+induction t with d hd,
+rw zero_add at tatb,
+rw zero_add at tatb,
+cc,
+
+rw succ_add at tatb,
+rw succ_add at tatb,
+cc,
