@@ -64,8 +64,8 @@ httpAutoIndexServer = paragraph
   , en "Auto Index HTTP Server"
 
   , itemize
-    [ cn "\\item v1.x 使用C++11"
-    , en "\\item v1.x uses C++11"
+    [ cn "\\item V1.x 使用C++11"
+    , en "\\item V1.x uses C++11"
 
     , cn "\\item V2.x 使用C++17，EPOLL/IOCP"
     , en "\\item V2.x uses C++17, EPOLL/IOCP"
