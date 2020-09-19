@@ -12,7 +12,7 @@ basicInfo = paragraph
   , pure $ "\\email{ih@iriszero.cc}" ++ period
   -- , cn $ "\\phone{(+86) 000-0000-0000}" ++ period
   , pure $ "\\github[iriszero48]{https://github.com/iriszero48}" ++ period
-  , pure $ "\\homepage[iriszero.org]{https://iriszero.top}"
+  , pure $ "\\homepage[iriszero.top]{https://iriszero.top}"
   , pure "}"
   ] where period = "\\textperiodcentered\\"
 
