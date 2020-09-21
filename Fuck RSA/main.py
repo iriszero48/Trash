@@ -1,3 +1,8 @@
+from binascii import unhexlify
+from operator import mul
+from functools import reduce
+
+
 def egcd(a, b):
     if a == 0:
         return (b, 0, 1)
