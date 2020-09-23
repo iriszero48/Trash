@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>1</title>
+    <style type="text/css">
+        table {
+            border-collapse: collapse;
+        }
+
+        td, tr {
+            border: 1px solid;
+        }
+    </style>
+</head>
+<body>
+<div>
+    <form action="" method="POST">
+        <table>
+            <caption>个人信息</caption>
+            <tr>
+                <td>姓名：</td>
+                <td><label><input type="text"></label></td>
+            </tr>
+            <tr>
+                <td>性别：</td>
+                <td>
+                    <input type="radio" name="sex" value="male" id="male"><label for="male">男</label>
+                    <input type="radio" name="sex" value="female" id="female"><label for="female">女</label>
+                    <input type="radio" name="sex" value="secret" id="secret"><label for="secret">保密</label>
+                </td>
+            </tr>
+            <tr>
+                <td>出生日期</td>
+                <td><label><input type="date"></label></td>
+            </tr>
+            <tr>
+                <td>身高：</td>
+                <td><input type="text" id="height"><label for="height">cm</label></td>
+            </tr>
+            <tr>
+                <td>男/女神照骗：</td>
+                <td><input type="file" value="选择文件"></td>
+            </tr>
+            <tr>
+                <td>银行卡密码：</td>
+                <td><label><input type="password"></label></td>
+            </tr>
+            <tr>
+                <td>喜欢的电影类型：</td>
+                <td>
+
+                    <label>
+                        <select name="area">
+                            <option value="movieType1">电影1</option>
+                            <option value="movieType2">电影2</option>
+                            <option value="movieType3">电影3</option>
+                            <option value="nil" selected>--请选择电影类型--</option>
+                        </select>
+                    </label>
+
+                </td>
+            </tr>
+            <tr>
+                <td>特长：</td>
+                <td>
+                    <input type="checkbox" name="hobby" value="noddle" id="noddle"> <label for="noddle">下面</label>
+                    <input type="checkbox" name="hobby" value="baseball" id="baseball"> <label for="baseball">篮球</label>
+                </td>
+            </tr>
+            <tr>
+                <td>如果中了五百万，你会？</td>
+                <td><label><textarea name="desc" rows="10" cols="30"></textarea></label></td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <fieldset>
+                        <legend>健康信息</legend>
+                        <label for="h">height</label><input type="text" id="h">
+                        <label for="w">weight</label><input type="text" id="w">
+                    </fieldset>
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: center" colspan="2">
+                    <input type="submit" value="提交信息">
+                    <input type="button" value="重置">
+                    <input type="button" value="这是一个普通的按钮">
+                    <input type="submit" value="我也是按钮" disabled>
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+</body>
+</html>
