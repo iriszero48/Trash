@@ -1,0 +1,2 @@
+#编写程序，模拟抓狐狸小游戏。假设一共有一排 5 个洞口，小狐狸最开始的时候在其中一个洞口，然后玩家随机打开一个洞口，如果里面有狐狸就抓到了。如果洞口里没有狐狸就第二天再来抓，但是第二天狐狸会在玩家来抓之前跳到隔壁洞口里。
+(lambda rd: (lambda f: (lambda x: x(x))(lambda y: f(lambda *a: y(y)(*a))))(lambda f: lambda pos, select, valid: f(pos, input("invalid value, retry:"), valid) if select not in valid else print("found!") if int(select) - 1 == pos else f((5 + pos + -1 ** rd(1, 2)) % 5, input("not found, retry:"), valid))(rd(0, 4), input("where is fox(1-5):"), list(map(str, range(1, 6)))))(__import__('random').SystemRandom().randint)
