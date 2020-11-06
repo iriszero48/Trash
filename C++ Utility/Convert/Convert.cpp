@@ -24,7 +24,7 @@ namespace Convert
 	{
 		int res;
 		auto [p, e] = std::from_chars(value.data(), value.data() + value.length(), res, base);
-		if (e == std::errc{}) __Convert_ThrowEx__("convert error: invalid literal: ", p);
+		if (e != std::errc{}) __Convert_ThrowEx__("convert error: invalid literal: ", p);
 		return res;
 	}
 }
