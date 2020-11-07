@@ -1,0 +1,1 @@
+Image[Abs[Fourier[ImageData[...]]]]
