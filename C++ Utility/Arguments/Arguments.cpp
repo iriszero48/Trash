@@ -5,7 +5,7 @@
 #define __Arguments_Line__ __Arguments_ToString__(__LINE__)
 #define __Arguments_ThrowEx__(...) throw std::runtime_error(__Arguments_Combine__( __FILE__ ": " __Arguments_Line__ ":\n", __VA_ARGS__))
 
-namespace Arguments
+namespace ArgumentsParse
 {
 	std::string Arguments::GetDesc()
 	{
@@ -29,18 +29,37 @@ namespace Arguments
 		const auto defDefined = args.find("") != args.end();
 #define UnrecognizedOption(...) __Arguments_ThrowEx__("Unrecognized option: ", __VA_ARGS__)
 #define MissingArgument(...) __Arguments_ThrowEx__("Missing argument for option: ", __VA_ARGS__)
-		for (auto i = 1; i < argc; i += 2)
+		for (auto i = 1; i < argc; ++i)
 		{
-			if (argv[i][0] == '-')
+			auto pos = args.find(argv[i]);
+			if (pos != args.end())
 			{
-				if(args.find(argv[i]) == args.end()) UnrecognizedOption(argv[i]);
-				if (i + 1 >= argc) MissingArgument(argv[i]);
-				args.at(argv[i])->Set(argv[i + 1]);
-			}
-			else if (defDefined)
-			{
-				args.at("")->Set(argv[i]);
-				i--;
+				const auto len = pos->second->GetArgLength();
+				if (len + i < argc)
+				{
+					auto setValue = [&]() -> IArgument::SetValueType {
+						switch (len)
+						{
+						case 0:
+							return { std::nullopt };
+						case 1:
+							return { argv[i + 1] };
+						default:
+							std::vector<std::string_view> values{};
+							for (auto j = 0; j < len; ++j)
+							{
+								values.emplace_back(argv[i + j + 1]);
+							}
+							return values;
+						}
+					}();
+					pos->second->Set(setValue);
+					i += len;
+				}
+				else
+				{
+					MissingArgument(argv[i]);
+				}
 			}
 			else
 			{
