@@ -1,20 +1,20 @@
 #pragma once
 
+#include <cstdint>
 #include <string>
 #include <any>
 #include <functional>
 #include <optional>
 #include <sstream>
+#include <variant>
 
-namespace Arguments
+template <typename ...Args>
+std::string __Arguments_Combine__(Args&&... args)
 {
-	template <typename ...Args>
-	std::string __Arguments_Combine__(Args&&... args)
-	{
-		std::ostringstream ss;
-		(ss << ... << args);
-		return ss.str();
-	}
+	std::ostringstream ss;
+	(ss << ... << args);
+	return ss.str();
+}
 
 #define __Arguments_ToStringFunc__(x) #x
 #define __Arguments_ToString__(x) __Arguments_ToStringFunc__(x)
@@ -23,50 +23,85 @@ namespace Arguments
 
 #define __Arguments_ThrowEx__(...) throw std::runtime_error(__Arguments_Combine__( __FILE__ ": " __Arguments_Line__ ":\n", __VA_ARGS__))
 
+namespace ArgumentsParse
+{
+	using ArgLengthType = std::uint8_t;
+	
 	class IArgument
 	{
 	public:
+		template<ArgLengthType Len> struct SetValueTypeImp { using Type = std::vector<std::string_view>; };
+		template<> struct SetValueTypeImp<1> { using Type = std::string_view; };
+		template<> struct SetValueTypeImp<0> { using Type = std::nullopt_t; };
+		
+		using SetValueType = std::variant<SetValueTypeImp<0>::Type, SetValueTypeImp<1>::Type, SetValueTypeImp<2>::Type>;
+
+		IArgument() = default;
 		virtual ~IArgument() = default;
-		virtual void Set(const std::string& value) = 0;
+		IArgument(const IArgument& iArgument) = default;
+		IArgument(IArgument&& iArgument) = default;
+		IArgument& operator=(const IArgument& iArgument) = default;
+		IArgument& operator=(IArgument&& iArgument) = default;
+		
+		virtual void Set(const SetValueType& value) = 0;
 		virtual operator std::string() const = 0;
 		virtual std::any Get() = 0;
 		virtual std::string GetName() = 0;
 		virtual std::string GetDesc() = 0;
+		virtual ArgLengthType GetArgLength() = 0;
 	};
-
-	template <typename T = std::string>
-	class Argument : public IArgument
+	
+	template <typename T = std::string, ArgLengthType ArgLength = 1>
+	class Argument final : public IArgument
 	{
 	public:
 		using ValueType = T;
 		using ValueTypeOpt = std::optional<ValueType>;
-		using ConstraintFuncMsg = std::optional<std::string>;
-		using ConstraintFunc = std::function<ConstraintFuncMsg(const ValueType&)>;
-		using ConvertFunc = std::function<ValueType(const std::string&)>;
 
-		Argument(
-			std::string name,
-			std::string desc = "",
-			ValueTypeOpt defaultValue = std::nullopt,
-			ConstraintFunc constraint = [](const auto&) { return std::nullopt; },
-			ConvertFunc convert = [](const auto& val) { return val; }) :
-			val(std::move(defaultValue)),
-			constraint(std::move(constraint)),
-			convert(std::move(convert)),
-			name(std::move(name)),
-			desc(std::move(desc)) {}
-
-		void Set(const std::string& value) override
+		struct ConvertResult
 		{
-			auto conv = convert(value);
-			auto msg = constraint(conv);
-			if (!msg)
+			ValueTypeOpt Value;
+			std::string Message;
+		};
+
+		using ConvertFuncParamTypeImp = typename SetValueTypeImp<ArgLength>::Type;
+		using ConvertFuncParamType = const ConvertFuncParamTypeImp&;
+		using ConvertFuncType = std::function<ConvertResult(ConvertFuncParamType)>;
+
+		explicit Argument(
+			std::string name,
+			std::string desc,
+			ValueTypeOpt defaultValue,
+			ConvertFuncType convert = DefaultConvert):
+			name(std::move(name)),
+			desc(std::move(desc)),
+			val(std::move(defaultValue)),
+			convert(convert) {}
+
+		explicit Argument(
+			std::string name,
+			std::string desc,
+			ConvertFuncType convert = DefaultConvert) :
+			name(std::move(name)),
+			desc(std::move(desc)),
+			convert(convert) {}
+
+		//void SetConvertFunc(const ConvertFuncType& func)
+		//{
+		//	convert = func;
+		//}
+		
+		void Set(const SetValueType& value) override
+		{
+			ConvertFuncParamTypeImp valueUnbox = std::get<decltype(valueUnbox)>(value);
+			auto [v, e] = convert(valueUnbox);
+			if (v.has_value())
 			{
-				val = ValueTypeOpt(conv);
+				val = v;
 			}
 			else
 			{
-				__Arguments_ThrowEx__(name, ": ", msg.value().c_str());
+				__Arguments_ThrowEx__(name, ": ", e.c_str());
 			}
 		}
 
@@ -78,12 +113,15 @@ namespace Arguments
 
 		[[nodiscard]] operator std::string() const override { return name; }
 
+		ArgLengthType GetArgLength() override { return ArgLength; }
+
+		static ConvertResult DefaultConvert(ConvertFuncParamType value) { return { ValueTypeOpt(value), {} }; }
+
 	private:
-		std::any val;
-		ConstraintFunc constraint;
-		ConvertFunc convert;
 		std::string name;
 		std::string desc;
+		std::any val = std::nullopt;
+		ConvertFuncType convert;
 	};
 
 	class Arguments
@@ -91,8 +129,8 @@ namespace Arguments
 	public:
 		void Parse(int argc, char** argv);
 
-		template <typename T>
-		void Add(Argument<T>& arg)
+		template <typename T, ArgLengthType ArgLength>
+		void Add(Argument<T, ArgLength>& arg)
 		{
 			if (args.find(arg.GetName()) != args.end())
 			{
@@ -104,7 +142,7 @@ namespace Arguments
 		std::string GetDesc();
 
 		template <typename T = std::string>
-		typename Argument<T>::ValueType Value(const std::string& arg)
+		T Value(const std::string& arg)
 		{
 			try
 			{
@@ -119,7 +157,7 @@ namespace Arguments
 		template <typename T = std::string>
 		std::optional<T> Get(const std::string& arg)
 		{
-			return std::any_cast<typename Argument<T>::ValueTypeOpt>(args.at(arg)->Get());
+			return std::any_cast<std::optional<T>>(args.at(arg)->Get());
 		}
 
 		IArgument* operator[](const std::string& arg);
