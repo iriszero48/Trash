@@ -3,117 +3,121 @@
 #include <stdexcept>
 #include <climits>
 #include <cstring>
-#include <fstream>
 #include <numeric>
-#include <type_traits>
-
-#include <execution>
-#include <iostream>
+#include <algorithm>
+#include <charconv>
 
 namespace Detail
 {
-	enum class Endian
-	{
-#ifdef _MSC_VER
-		Little = 0,
-		Big = 1,
-		Native = Little
-#else
-		Little = __ORDER_LITTLE_ENDIAN__,
-		Big = __ORDER_BIG_ENDIAN__,
-		Native = __BYTE_ORDER__
-#endif
-	};
-
-	template<typename T, std::size_t... N>
-	constexpr T BSwapImpl(T i, std::index_sequence<N...>)
-	{
-		return (((i >> N * CHAR_BIT & static_cast<std::uint8_t>(-1)) << (sizeof(T) - 1 - N) * CHAR_BIT) | ...);
-	}
-
-	template<typename T, typename U = std::make_unsigned_t<T>>
-	constexpr U BSwap(T i)
-	{
-		return BSwapImpl<U>(i, std::make_index_sequence<sizeof(T)>{});
-	}
-
 	namespace Bit
 	{
+		enum class Endian
+		{
+#ifdef _MSC_VER
+			Little = 0,
+			Big = 1,
+			Native = Little
+#else
+			Little = __ORDER_LITTLE_ENDIAN__,
+			Big = __ORDER_BIG_ENDIAN__,
+			Native = __BYTE_ORDER__
+#endif
+		};
+		
+		template<typename T, std::size_t... N>
+		constexpr T BSwapImpl(T i, std::index_sequence<N...>)
+		{
+			return (((i >> N * CHAR_BIT & static_cast<std::uint8_t>(-1)) << (sizeof(T) - 1 - N) * CHAR_BIT) | ...);
+		}
+
+		template<typename T, typename U = std::make_unsigned_t<T>>
+		constexpr U BSwap(T i)
+		{
+			return BSwapImpl<U>(i, std::make_index_sequence<sizeof(T)>{});
+		}
+		
 		template<typename T>
 		constexpr T RotateLeft(const T x, const int n)
 		{
 			return (x << n) | (x >> (sizeof(T) * 8 - n));
 		}
+		
 		template<typename T>
 		constexpr T RotateRight(const T x, const int n)
 		{
 			return (x >> n) | (x << (sizeof(T) * 8 - n));
 		}
 	}
-	
-	template<typename T>
-	std::string Uint8ArrayToStringPaddingZero(const T& data)
+
+	namespace String
 	{
-		//static_assert(sizeof(T[0]) == sizeof(std::uint8_t), "mismatch size");
-		std::string hex{};
-		hex.reserve(sizeof(data) * 2);
-		for (unsigned char value : data)
+		template<typename Func>
+		struct NewString
 		{
-			char res[4]{ '0', 0, 0, 0 };
-			if (const auto [p, e] = std::to_chars(res + 1, res + 3, value, 16);
+			Func Caller;
+
+			explicit NewString(const Func caller) : Caller(caller) {}
+
+			template<typename T, typename ...Args>
+			std::string operator()(const T str, Args&&...args)
+			{
+				std::string buf(str);
+				Caller(buf, std::forward<Args>(args)...);
+				return buf;
+			}
+		};
+
+		template<typename T>
+		void ToLower(T& string)
+		{
+			std::transform(string.begin(), string.end(), string.begin(), static_cast<int(*)(int)>(std::tolower));
+		}
+	}
+
+	namespace Hash
+	{
+		template<typename T>
+		inline std::string Uint8ArrayToStringPaddingZero(const T& data)
+		{
+			std::string hex{};
+			hex.reserve(sizeof(data) * 2);
+			for (unsigned char value : data)
+			{
+				char res[4]{ '0', 0, 0, 0 };
+				if (const auto [p, e] = std::to_chars(res + 1, res + 3, value, 16);
+					e != std::errc{}) throw std::runtime_error("convert error");
+				hex.append(res[2] == 0 ? std::string_view(res, 2) : std::string_view(res + 1, 2));
+			}
+			return hex;
+		}
+
+		template<typename T>
+		inline std::string ToStringPaddingZero(const T value)
+		{
+			constexpr auto size = sizeof(T);
+			constexpr auto bufSize = size * 2 + 1;
+
+			char res[bufSize]{ 0 };
+			if (const auto [p, e] = std::to_chars(res, res + bufSize, value, 16);
 				e != std::errc{}) throw std::runtime_error("convert error");
-			hex.append(res[2] == 0 ? std::string_view(res, 2) : std::string_view(res + 1, 2));
+			const std::string hex(res);
+			return std::string(bufSize - 1 - hex.length(), '0') + hex;
 		}
-		return hex;
-	}
 
-	template<typename T>
-	std::string ToStringPaddingZero(const T value)
-	{
-		constexpr auto size = sizeof(T);
-		constexpr auto bufSize = size * 2 + 1;
-
-		char res[bufSize]{ 0 };
-		if (const auto [p, e] = std::to_chars(res, res + bufSize, value, 16);
-			e != std::errc{}) throw std::runtime_error("convert error");
-		const std::string hex(res);
-		return std::string(bufSize - 1 - hex.length(), '0') + hex;
-	}
-
-	template<typename Func>
-	struct NewString
-	{
-		Func Caller;
-
-		explicit NewString(const Func caller) : Caller(caller) {}
-
-		template<typename T, typename ...Args>
-		std::string operator()(const T str, Args&&...args)
+		template<typename T>
+		inline bool ArrayCmp(const T& l, const T& r)
 		{
-			std::string buf(str);
-			Caller(buf, std::forward<Args>(args)...);
-			return buf;
+			return std::equal(std::begin(l), std::end(l), std::begin(r));
 		}
-	};
 
-	template<typename T>
-	void ToLower(T& string)
-	{
-		std::transform(string.begin(), string.end(), string.begin(), static_cast<int(*)(int)>(std::tolower));
+		template<typename T>
+		inline bool HashStrCmp(const T& hash, const std::string& str)
+		{
+			return hash.operator std::string() == String::NewString(Detail::String::ToLower<std::string>)(str);
+		}
+
 	}
-
-	template<typename T>
-	bool ArrayCmp(const T& l, const T& r)
-	{
-		return std::equal(std::begin(l), std::end(l), std::begin(r));
-	}
-
-	template<typename T>
-	bool HashStrCmp(const T& hash, const std::string& str)
-	{
-		return hash.operator std::string() == NewString(Detail::ToLower<std::string>)(str);
-	}
-
+	
 	namespace Md5
 	{
 		enum class Round { F, G, H, I };
@@ -151,8 +155,9 @@ namespace Detail
 
 		constexpr std::uint32_t Get(const std::uint8_t* buf, const std::uint64_t index)
 		{
+			using namespace Detail::Bit;
 			if constexpr (Endian::Native == Endian::Little) return       *(std::uint32_t*)&buf[index * 4];
-			if constexpr (Endian::Native == Endian::Big) return BSwap(*(std::uint32_t*)&buf[index * 4]);
+			if constexpr (Endian::Native == Endian::Big)    return BSwap(*(std::uint32_t*)&buf[index * 4]);
 		}
 	}
 
@@ -162,22 +167,22 @@ namespace Detail
 
 		constexpr std::uint32_t F(const std::uint32_t x, const std::uint32_t y, const std::uint32_t z)
 		{
-			return ((z) ^ ((x) & ((y) ^ (z))));
+			return z ^ (x & (y ^ z));
 		}
 
 		constexpr std::uint32_t G(const std::uint32_t x, const std::uint32_t y, const std::uint32_t z)
 		{
-			return ((x) ^ (y) ^ (z));
+			return x ^ y ^ z;
 		}
 
 		constexpr std::uint32_t H(const std::uint32_t x, const std::uint32_t y, const std::uint32_t z)
 		{
-			return (((x) & (y)) | ((z) & ((x) | (y))));
+			return (x & y) | (z & (x | y));
 		}
 
 		constexpr std::uint32_t I(const std::uint32_t x, const std::uint32_t y, const std::uint32_t z)
 		{
-			return ((x) ^ (y) ^ (z));
+			return x ^ y ^ z;
 		}
 
 		constexpr std::uint32_t WAt(const std::uint32_t* w, const std::uint8_t i)
@@ -194,10 +199,10 @@ namespace Detail
 		template<Round Func>
 		constexpr void Step(std::uint32_t& a, std::uint32_t& b, const std::uint32_t c, const std::uint32_t d, std::uint32_t& e, const std::uint32_t w)
 		{
-			if constexpr (Func == Round::F) (e) += F((b), (c), (d)) + (w) + 0x5A827999u;
-			if constexpr (Func == Round::G) (e) += G((b), (c), (d)) + (w) + 0x6ED9EBA1u;
-			if constexpr (Func == Round::H) (e) += H((b), (c), (d)) + (w) + 0x8F1BBCDCu;
-			if constexpr (Func == Round::I) (e) += I((b), (c), (d)) + (w) + 0xCA62C1D6u;
+			if constexpr (Func == Round::F) e += F(b, c, d) + w + 0x5A827999u;
+			if constexpr (Func == Round::G) e += G(b, c, d) + w + 0x6ED9EBA1u;
+			if constexpr (Func == Round::H) e += H(b, c, d) + w + 0x8F1BBCDCu;
+			if constexpr (Func == Round::I) e += I(b, c, d) + w + 0xCA62C1D6u;
 			e += Bit::RotateLeft(a, 5);
 			b = Bit::RotateLeft(b, 30);
 		}
@@ -219,32 +224,32 @@ namespace Detail
 		
 		constexpr std::uint32_t Ch(const std::uint32_t x, const std::uint32_t y, const std::uint32_t z)
 		{
-			return ((x & y) ^ (~x & z));
+			return (x & y) ^ (~x & z);
 		}
 
 		constexpr std::uint32_t Maj(const std::uint32_t x, const std::uint32_t y, const std::uint32_t z)
 		{
-			return ((x & y) ^ (x & z) ^ (y & z));
+			return (x & y) ^ (x & z) ^ (y & z);
 		}
 
 		constexpr std::uint32_t S0(const std::uint32_t x)
 		{
-			return (Bit::RotateRight(x, 2) ^ Bit::RotateRight(x, 13) ^ Bit::RotateRight(x, 22));
+			return Bit::RotateRight(x, 2) ^ Bit::RotateRight(x, 13) ^ Bit::RotateRight(x, 22);
 		}
 		
 		constexpr std::uint32_t S1(const std::uint32_t x)
 		{
-			return (Bit::RotateRight(x, 6) ^ Bit::RotateRight(x, 11) ^ Bit::RotateRight(x, 25));
+			return Bit::RotateRight(x, 6) ^ Bit::RotateRight(x, 11) ^ Bit::RotateRight(x, 25);
 		}
 		
 		constexpr std::uint32_t R0(const std::uint32_t x)
 		{
-			return (Bit::RotateRight(x, 7) ^ Bit::RotateRight(x, 18) ^ (x >> 3));
+			return Bit::RotateRight(x, 7) ^ Bit::RotateRight(x, 18) ^ (x >> 3);
 		}
 		
 		constexpr std::uint32_t R1(const std::uint32_t x)
 		{
-			return (Bit::RotateRight(x, 17) ^ Bit::RotateRight(x, 19) ^ (x >> 10));
+			return Bit::RotateRight(x, 17) ^ Bit::RotateRight(x, 19) ^ (x >> 10);
 		}
 	}
 	
@@ -320,19 +325,19 @@ namespace Cryptography
 	template<>
 	 Hash<Md5::HashValueType>::operator std::string() const
 	{
-		return Detail::Uint8ArrayToStringPaddingZero(Data);
+		return Detail::Hash::Uint8ArrayToStringPaddingZero(Data);
 	}
 
 	 template<>
 	 bool Hash<Md5::HashValueType>::operator==(const std::string& hashStr) const
 	 {
-		 return Detail::HashStrCmp(*this, hashStr);
+		 return Detail::Hash::HashStrCmp(*this, hashStr);
 	 }
 
 	 template<>
 	 bool Hash<Md5::HashValueType>::operator==(const Hash<Md5::HashValueType>& hash) const
 	 {
-		 return Detail::ArrayCmp(Data, hash.Data);
+		 return Detail::Hash::ArrayCmp(Data, hash.Data);
 	 }
 	
 	Md5::Md5(): data({{0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476}}) {}
@@ -368,7 +373,7 @@ namespace Cryptography
 	void Md5::Append(std::istream& stream)
 	{
 		if (finished) throw std::runtime_error("append error: finished");
-		if (stream.bad()) throw std::runtime_error("append error: bad stream");
+		if (!stream) throw std::runtime_error("append error: bad stream");
 		
 		while (!stream.eof())
 		{
@@ -381,6 +386,8 @@ namespace Cryptography
 
 	Md5::HashType Md5::Digest()
 	{
+		using namespace Detail::Bit;
+		
 		if (finished) return data.Word;
 		length += bufferLen;
 		length <<= 3u; // *= 8
@@ -396,16 +403,16 @@ namespace Cryptography
 		}
 		memset(buffer + bufferLen, 0, emp - 8u);
 		
-		if constexpr (Detail::Endian::Native == Detail::Endian::Big) length = Detail::BSwap(length);
+		if constexpr (Endian::Native == Endian::Big) length = BSwap(length);
 		memcpy(buffer + 56, &length, 8);		
 		Append64(buffer, 1);
 		
-		if constexpr (Detail::Endian::Native == Detail::Endian::Big)
+		if constexpr (Endian::Native == Endian::Big)
 		{
-			data.DWord.A = Detail::BSwap(data.DWord.A);
-			data.DWord.B = Detail::BSwap(data.DWord.B);
-			data.DWord.C = Detail::BSwap(data.DWord.C);
-			data.DWord.D = Detail::BSwap(data.DWord.D);
+			data.DWord.A = BSwap(data.DWord.A);
+			data.DWord.B = BSwap(data.DWord.B);
+			data.DWord.C = BSwap(data.DWord.C);
+			data.DWord.D = BSwap(data.DWord.D);
 		}
 		finished = true;
 		return data.Word;
@@ -515,19 +522,19 @@ namespace Cryptography
 	template<>
 	Hash<Sha1::HashValueType>::operator std::string() const
 	{
-		return Detail::Uint8ArrayToStringPaddingZero(Data);
+		return Detail::Hash::Uint8ArrayToStringPaddingZero(Data);
 	}
 
 	template<>
 	bool Hash<Sha1::HashValueType>::operator==(const std::string& hashStr) const
 	{
-		return Detail::HashStrCmp(*this, hashStr);
+		return Detail::Hash::HashStrCmp(*this, hashStr);
 	}
 
 	template<>
 	bool Hash<Sha1::HashValueType>::operator==(const Hash<Sha1::HashValueType>& hash) const
 	{
-		return Detail::ArrayCmp(Data, hash.Data);
+		return Detail::Hash::ArrayCmp(Data, hash.Data);
 	}
 	
 	Sha1::Sha1(): data({{0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0}}) {}
@@ -563,7 +570,7 @@ namespace Cryptography
 	void Sha1::Append(std::istream& stream)
 	{
 		if (finished) throw std::runtime_error("append error: finished");
-		if (stream.bad()) throw std::runtime_error("append error: bad stream");
+		if (!stream) throw std::runtime_error("append error: bad stream");
 
 		while (!stream.eof())
 		{
@@ -576,6 +583,8 @@ namespace Cryptography
 
 	Sha1::HashType Sha1::Digest()
 	{
+		using namespace Detail::Bit;
+		
 		if (finished) return data.Word;
 		length += bufferLen;
 		length <<= 3u; // *= 8
@@ -591,17 +600,17 @@ namespace Cryptography
 		}
 		memset(buffer + bufferLen, 0, emp - 8u);
 
-		if constexpr (Detail::Endian::Native == Detail::Endian::Little) length = Detail::BSwap(length);
+		if constexpr (Endian::Native == Endian::Little) length = BSwap(length);
 		memcpy(buffer + 56, &length, 8);
 		Append64(buffer, 1);
 
-		if constexpr (Detail::Endian::Native == Detail::Endian::Little)
+		if constexpr (Endian::Native == Endian::Little)
 		{
-			data.DWord.A = Detail::BSwap(data.DWord.A);
-			data.DWord.B = Detail::BSwap(data.DWord.B);
-			data.DWord.C = Detail::BSwap(data.DWord.C);
-			data.DWord.D = Detail::BSwap(data.DWord.D);
-			data.DWord.E = Detail::BSwap(data.DWord.E);
+			data.DWord.A = BSwap(data.DWord.A);
+			data.DWord.B = BSwap(data.DWord.B);
+			data.DWord.C = BSwap(data.DWord.C);
+			data.DWord.D = BSwap(data.DWord.D);
+			data.DWord.E = BSwap(data.DWord.E);
 		}
 		finished = true;
 		return data.Word;
@@ -610,6 +619,8 @@ namespace Cryptography
 	void Sha1::Append64(std::uint8_t* buf, std::uint64_t n)
 	{
 		using namespace Detail::Sha1;
+		using namespace Detail::Bit;
+		
 		auto [a, b, c, d, e] = data.DWord;
 
 		while (n--)
@@ -623,8 +634,8 @@ namespace Cryptography
 			std::uint32_t w[16];
 			for (int i = 0; i < 16; ++i)
 			{
-				if constexpr (Detail::Endian::Native == Detail::Endian::Little) w[i] = Detail::BSwap(*(std::uint32_t*)&buf[i * 4]);
-				if constexpr (Detail::Endian::Native == Detail::Endian::Big   ) w[i] =              (*(std::uint32_t*)&buf[i * 4]);
+				if constexpr (Endian::Native == Endian::Little) w[i] = BSwap(*(std::uint32_t*)&buf[i * 4]);
+				if constexpr (Endian::Native == Endian::Big   ) w[i] =      (*(std::uint32_t*)&buf[i * 4]);
 			}
 
 			Step<Round::F>(a, b, c, d, e,   w [ 0]); 
@@ -738,19 +749,19 @@ namespace Cryptography
 	template<>
 	Hash<Sha256::HashValueType>::operator std::string() const
 	{
-		return Detail::Uint8ArrayToStringPaddingZero(Data);
+		return Detail::Hash::Uint8ArrayToStringPaddingZero(Data);
 	}
 
 	template<>
 	bool Hash<Sha256::HashValueType>::operator==(const std::string& hashStr) const
 	{
-		return Detail::HashStrCmp(*this, hashStr);
+		return Detail::Hash::HashStrCmp(*this, hashStr);
 	}
 
 	template<>
 	bool Hash<Sha256::HashValueType>::operator==(const Hash<Sha256::HashValueType>& hash) const
 	{
-		return Detail::ArrayCmp(Data, hash.Data);
+		return Detail::Hash::ArrayCmp(Data, hash.Data);
 	}
 
 	
@@ -796,7 +807,7 @@ namespace Cryptography
 	void Sha256::Append(std::istream& stream)
 	{
 		if (finished) throw std::runtime_error("append error: finished");
-		if (stream.bad()) throw std::runtime_error("append error: bad stream");
+		if (!stream) throw std::runtime_error("append error: bad stream");
 
 		while (!stream.eof())
 		{
@@ -809,6 +820,8 @@ namespace Cryptography
 	
 	Sha256::HashType Sha256::Digest()
 	{
+		using namespace Detail::Bit;
+		
 		if (finished) return data.Word;
 		length += bufferLen;
 		length <<= 3u; // *= 8
@@ -824,20 +837,20 @@ namespace Cryptography
 		}
 		memset(buffer + bufferLen, 0, emp - 8u);
 
-		if constexpr (Detail::Endian::Native == Detail::Endian::Little) length = Detail::BSwap(length);
+		if constexpr (Endian::Native == Endian::Little) length = BSwap(length);
 		memcpy(buffer + 56, &length, 8);
 		Append64(buffer, 1);
 
-		if constexpr (Detail::Endian::Native == Detail::Endian::Little)
+		if constexpr (Endian::Native == Endian::Little)
 		{
-			data.DWord.A = Detail::BSwap(data.DWord.A);
-			data.DWord.B = Detail::BSwap(data.DWord.B);
-			data.DWord.C = Detail::BSwap(data.DWord.C);
-			data.DWord.D = Detail::BSwap(data.DWord.D);
-			data.DWord.E = Detail::BSwap(data.DWord.E);
-			data.DWord.F = Detail::BSwap(data.DWord.F);
-			data.DWord.G = Detail::BSwap(data.DWord.G);
-			data.DWord.H = Detail::BSwap(data.DWord.H);
+			data.DWord.A = BSwap(data.DWord.A);
+			data.DWord.B = BSwap(data.DWord.B);
+			data.DWord.C = BSwap(data.DWord.C);
+			data.DWord.D = BSwap(data.DWord.D);
+			data.DWord.E = BSwap(data.DWord.E);
+			data.DWord.F = BSwap(data.DWord.F);
+			data.DWord.G = BSwap(data.DWord.G);
+			data.DWord.H = BSwap(data.DWord.H);
 		}
 		finished = true;
 		return data.Word;
@@ -863,8 +876,8 @@ namespace Cryptography
 			std::uint32_t w[64];
 			for (int i = 0; i < 16; ++i)
 			{
-				if constexpr (Detail::Endian::Native == Detail::Endian::Little) w[i] = Detail::BSwap(*(std::uint32_t*)&buf[i * 4]);
-				if constexpr (Detail::Endian::Native == Detail::Endian::Big) w[i] = (*(std::uint32_t*)&buf[i * 4]);
+				if constexpr (Endian::Native == Endian::Little) w[i] = BSwap(*(std::uint32_t*)&buf[i * 4]);
+				if constexpr (Endian::Native == Endian::Big)    w[i] =      (*(std::uint32_t*)&buf[i * 4]);
 			}
 
 			for (auto i = 16; i < 64; ++i)
@@ -919,13 +932,13 @@ namespace Cryptography
 	template<>
 	Hash<Crc32::HashValueType>::operator std::string() const
 	{
-		return Detail::ToStringPaddingZero(Data);
+		return Detail::Hash::ToStringPaddingZero(Data);
 	}
 
 	template<>
 	bool Hash<Crc32::HashValueType>::operator==(const std::string& hashStr) const
 	{
-		return Detail::HashStrCmp(*this, hashStr);
+		return Detail::Hash::HashStrCmp(*this, hashStr);
 	}
 
 	template<>
@@ -947,7 +960,7 @@ namespace Cryptography
 	void Crc32::Append(std::istream& stream)
 	{
 		if (finished) throw std::runtime_error("append error: finished");
-		if (stream.bad()) throw std::runtime_error("append error: bad stream");
+		if (!stream) throw std::runtime_error("append error: bad stream");
 
 		while (!stream.eof())
 		{
