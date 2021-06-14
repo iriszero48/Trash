@@ -1,8 +1,7 @@
 #pragma once
 
 #include <string>
-#include <filesystem>
-#include <charconv>
+#include <iostream>
 
 namespace Cryptography
 {
@@ -19,23 +18,24 @@ namespace Cryptography
 
 		bool operator==(const std::string& hashStr) const;
 		
-		bool operator!=(const std::string& hashStr)
+		bool operator!=(const std::string& hashStr) const
 		{
 			return !(*this == hashStr);
 		}
 
 		bool operator==(const Hash<HashValueType>& hash) const;
 		
-		bool operator!=(const Hash<HashValueType>& hash)
+		bool operator!=(const Hash<HashValueType>& hash) const
 		{
 			return !(*this == hash);
 		}
 	};
 	
-	template<typename T, typename HashValueType>
+	template<typename T, typename Type>
 	class IHashAlgorithm
 	{
 	public:
+		using HashValueType = Type;
 		using HashType = Hash<HashValueType>;
 		
 		void Append(std::uint8_t* buf, std::uint64_t len)
@@ -55,7 +55,7 @@ namespace Cryptography
 	class Md5: IHashAlgorithm<Md5, std::uint8_t[16]>
 	{
 	public:
-		using HashValueType = std::uint8_t[16];
+		using HashValueType = HashValueType;
 		
 		Md5();
 		void Append(std::uint8_t* buf, std::uint64_t len);
@@ -81,7 +81,7 @@ namespace Cryptography
 	class Sha1: IHashAlgorithm<Sha1, std::uint8_t[20]>
 	{
 	public:
-		using HashValueType = std::uint8_t[20];
+		using HashValueType = HashValueType;
 
 		Sha1();
 		void Append(std::uint8_t* buf, std::uint64_t len);
@@ -107,7 +107,7 @@ namespace Cryptography
 	class Sha256 : IHashAlgorithm<Sha256, std::uint8_t[32]>
 	{
 	public:
-		using HashValueType = std::uint8_t[32];
+		using HashValueType = HashValueType;
 
 		Sha256();
 		void Append(std::uint8_t* buf, std::uint64_t len);
@@ -133,7 +133,7 @@ namespace Cryptography
 	class Crc32: IHashAlgorithm<Crc32, std::uint32_t>
 	{
 	public:
-		using HashValueType = std::uint32_t;
+		using HashValueType = HashValueType;
 
 		Crc32();
 		void Append(std::uint8_t* buf, std::uint64_t len);
