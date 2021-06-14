@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <memory>
 
 #include "Cryptography.h"
 //#define SHA1
