@@ -112,7 +112,7 @@ class server
 {
 public:
     server(asio::io_context& io_context, const short port)
-		: acceptor_(io_context, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port))
+		: acceptor(io_context, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port))
     {
         do_accept();
     }
@@ -120,14 +120,14 @@ public:
 private:
     void do_accept()
     {
-        acceptor_.async_accept([this](const asio::error_code ec, asio::ip::tcp::socket socket)
+        acceptor.async_accept([this](const asio::error_code ec, asio::ip::tcp::socket socket)
         {
             if (!ec) std::make_shared<session>(std::move(socket))->start();
             do_accept();
         });
     }
 
-    asio::ip::tcp::acceptor acceptor_;
+    asio::ip::tcp::acceptor acceptor;
 };
 
 int main(int argc, char* argv[])
