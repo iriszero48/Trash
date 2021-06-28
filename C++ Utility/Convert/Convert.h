@@ -75,8 +75,3 @@ namespace Convert
 	}
 #endif
 }
-
-#undef __Convert_ToStringFunc__
-#undef __Convert_ToString__
-#undef __Convert_Line__
-#undef __Convert_ThrowEx__
