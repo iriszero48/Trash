@@ -27,7 +27,7 @@ std::string __Arguments_Combine__(Args&&... args)
 
 namespace ArgumentsParse
 {
-	constexpr auto Version = "1.0.0";
+	constexpr auto Version = "1.0.1";
 
 	using ArgLengthType = std::uint8_t;
 	
@@ -126,7 +126,7 @@ namespace ArgumentsParse
 	class Arguments
 	{
 	public:
-		void Parse(int argc, char** argv);
+		void Parse(int argc, const char** argv);
 
 		template <typename T, ArgLengthType ArgLength>
 		void Add(Argument<T, ArgLength>& arg)
