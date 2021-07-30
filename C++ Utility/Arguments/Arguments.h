@@ -8,6 +8,7 @@
 #include <sstream>
 #include <variant>
 #include <unordered_map>
+#include <vector>
 
 template <typename ...Args>
 std::string __Arguments_Combine__(Args&&... args)
@@ -26,6 +27,8 @@ std::string __Arguments_Combine__(Args&&... args)
 
 namespace ArgumentsParse
 {
+	constexpr auto Version = "1.0.0";
+
 	using ArgLengthType = std::uint8_t;
 	
 	class IArgument
@@ -87,11 +90,6 @@ namespace ArgumentsParse
 			desc(std::move(desc)),
 			convert(convert) {}
 
-		//void SetConvertFunc(const ConvertFuncType& func)
-		//{
-		//	convert = func;
-		//}
-		
 		void Set(const SetValueType& value) override
 		{
 			ConvertFuncParamTypeImp valueUnbox = std::get<decltype(valueUnbox)>(value);
