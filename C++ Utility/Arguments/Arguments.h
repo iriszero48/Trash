@@ -7,6 +7,7 @@
 #include <optional>
 #include <sstream>
 #include <variant>
+#include <unordered_map>
 
 template <typename ...Args>
 std::string __Arguments_Combine__(Args&&... args)
