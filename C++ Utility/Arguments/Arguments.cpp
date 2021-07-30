@@ -2,11 +2,12 @@
 
 #include <algorithm>
 #include <queue>
+#include <typeindex>
 
 #define __Arguments_ToStringFunc__(x) #x
 #define __Arguments_ToString__(x) __Arguments_ToStringFunc__(x)
 #define __Arguments_Line__ __Arguments_ToString__(__LINE__)
-#define __Arguments_ThrowEx__(...) throw std::runtime_error(__Arguments_Combine__( __FILE__ ": " __Arguments_Line__ ":\n", __VA_ARGS__))
+#define __Arguments_ThrowEx__(...) throw std::runtime_error(__Arguments_Combine__( __FILE__ ": " __Arguments_Line__ ": ", __VA_ARGS__))
 
 namespace ArgumentsParse
 {
@@ -31,13 +32,43 @@ namespace ArgumentsParse
 		}
 		return ss.str();
 	}
-
-	void Arguments::Parse(const int argc, char** argv)
+	std::string Arguments::GetValuesDesc(
+		const std::unordered_map<std::type_index, std::function<std::string(std::any const&)>>& map)
 	{
-		if (argc < 2)
+		std::priority_queue<std::string, std::vector<std::string>, std::greater<>> item{};
+		std::vector<std::string::size_type> lens{};
+		for (const auto& [k, _] : args)
 		{
-			__Arguments_ThrowEx__(argv[0], " [options]");
+			if (args.at(k)->Get().type() != typeid(std::nullopt))
+			{
+				item.emplace(k);
+				lens.push_back(k.length());
+			}
 		}
+		const auto maxLen = *std::max_element(lens.begin(), lens.end());
+		std::ostringstream ss;
+		while (!item.empty())
+		{
+			const auto i = item.top();
+			const auto vAny = args.at(i)->Get();
+			ss << __Arguments_Combine__("Arguments [info]: ", i, std::string(maxLen - i.length(), ' '), ": ");
+			std::string v;
+			try
+			{
+				ss << map.at(vAny.type())(vAny);
+			}
+			catch (...)
+			{
+				ss << "unregistered type " << vAny.type().name();
+			}
+			ss << "\n";
+			item.pop();
+		}
+		return ss.str();
+	}
+
+	void Arguments::Parse(const int argc, const char** argv)
+	{
 #define UnrecognizedOption(...) __Arguments_ThrowEx__("Unrecognized option: ", __VA_ARGS__)
 #define MissingArgument(...) __Arguments_ThrowEx__("Missing argument for option: ", __VA_ARGS__)
 		for (auto i = 1; i < argc; ++i)
