@@ -20,7 +20,7 @@ namespace ArgumentsParse
 		return ss.str();
 	}
 
-	void Arguments::Parse(const int argc, char** argv)
+	void Arguments::Parse(const int argc, const char** argv)
 	{
 		if (argc < 2)
 		{
