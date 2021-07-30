@@ -1,5 +1,8 @@
 #include "Arguments.h"
 
+#include <algorithm>
+#include <queue>
+
 #define __Arguments_ToStringFunc__(x) #x
 #define __Arguments_ToString__(x) __Arguments_ToStringFunc__(x)
 #define __Arguments_Line__ __Arguments_ToString__(__LINE__)
@@ -9,33 +12,47 @@ namespace ArgumentsParse
 {
 	std::string Arguments::GetDesc()
 	{
+		std::priority_queue<std::string, std::vector<std::string>, std::greater<>> item{};
+		std::vector<std::string::size_type> lens{};
+		std::transform(
+			args.begin(),
+			args.end(),
+			std::back_inserter(lens),
+			[&](const std::pair<std::string, IArgument*>& x) { item.push(x.first); return x.first.length(); });
+		const auto maxLen = *std::max_element(lens.begin(), lens.end()) + 1;
 		std::ostringstream ss;
-		for (auto& arg : args)
+		while (!item.empty())
 		{
+			const auto i = item.top();
 			ss << __Arguments_Combine__(
-				std::string(4, ' '),
-				arg.first, " ",
-				arg.second->GetDesc(), "\n");
+				i, std::string(maxLen - i.length(), ' '),
+				args.at(i)->GetDesc(), "\n");
+			item.pop();
 		}
 		return ss.str();
 	}
 
-	void Arguments::Parse(const int argc, const char** argv)
+	void Arguments::Parse(const int argc, char** argv)
 	{
 		if (argc < 2)
 		{
-			__Arguments_ThrowEx__(argv[0], " [options]\n", GetDesc());
+			__Arguments_ThrowEx__(argv[0], " [options]");
 		}
-		const auto defDefined = args.find("") != args.end();
 #define UnrecognizedOption(...) __Arguments_ThrowEx__("Unrecognized option: ", __VA_ARGS__)
 #define MissingArgument(...) __Arguments_ThrowEx__("Missing argument for option: ", __VA_ARGS__)
 		for (auto i = 1; i < argc; ++i)
 		{
 			auto pos = args.find(argv[i]);
+			ArgLengthType def = 0;
+			if (pos == args.end())
+			{
+				pos = args.find("");
+				def = 1;
+			}
 			if (pos != args.end())
 			{
 				const auto len = pos->second->GetArgLength();
-				if (len + i < argc)
+				if (len + i - def < argc)
 				{
 					auto setValue = [&]() -> IArgument::SetValueType {
 						switch (len)
@@ -43,18 +60,18 @@ namespace ArgumentsParse
 						case 0:
 							return { std::nullopt };
 						case 1:
-							return { argv[i + 1] };
+							return { argv[i + 1 - def] };
 						default:
 							std::vector<std::string_view> values{};
 							for (auto j = 0; j < len; ++j)
 							{
-								values.emplace_back(argv[i + j + 1]);
+								values.emplace_back(argv[i + j + 1 - def]);
 							}
-							return values;
+							return { values };
 						}
 					}();
 					pos->second->Set(setValue);
-					i += len;
+					i += len - def;
 				}
 				else
 				{
