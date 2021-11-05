@@ -2,7 +2,7 @@ import java.util.function.IntUnaryOperator;
 import java.util.stream.IntStream;
 
 public class Main {
-    public static IntStream FibStream() {
+    public static long Fib(long n) {
         return IntStream.iterate(1, new IntUnaryOperator() {
             private int p = 0;
             @Override
@@ -11,13 +11,10 @@ public class Main {
                 p = operand;
                 return sum;
             }
-        });
-    }
-    public static long fib(long n) {
-        return FibStream().limit(n).reduce((a, b) -> b).getAsInt();
+        }).limit(n).reduce((a, b) -> b).getAsInt();
     }
 
     public static void main(String[] args) {
-        System.out.println(fib(10));
+        System.out.println(Fib(10));
     }
 }
