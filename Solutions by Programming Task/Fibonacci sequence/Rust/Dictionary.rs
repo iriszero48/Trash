@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-fn fib_impl(dict: &mut HashMap<u64, u64>, x: u64) -> u64 {
+fn fib_impl(dict: &mut HashMap<usize, usize>, x: usize) -> usize {
     if let Some(v) = dict.get(&x) {
         return *v
     }
@@ -14,8 +14,8 @@ fn fib_impl(dict: &mut HashMap<u64, u64>, x: u64) -> u64 {
     v
 }
 
-fn fib(x: u64) -> u64 {
-    let mut dict: HashMap<u64, u64> = (0..1).map(|x:u64| {(x, x)}).collect();
+fn fib(x: usize) -> usize {
+    let mut dict: HashMap<_, _> = (0..1).map(|x:usize| {(x, x)}).collect();
     fib_impl(&mut dict, x)
 }
 
