@@ -1,5 +1,5 @@
 fn fib(x: usize) -> usize {
-    std::iter::successors(Some((0,1)), |(p, n)| Some((*n, *p + *n))).map(|(p, _)| p).skip(x).next().unwrap()
+    std::iter::successors(Some((0,1)), |(p, n)| Some((*n, *p + *n))).skip(x).next().unwrap().0
 }
 
 fn main() {
