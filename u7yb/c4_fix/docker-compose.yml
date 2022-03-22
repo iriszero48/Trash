@@ -1,0 +1,27 @@
+version: "3.7"
+
+services:
+    python:
+        build: .
+        image: "python:alpine3.9"
+        stdin_open: true
+        tty: true
+        command: /bin/bash
+        depends_on:
+            - mysql
+        links:
+            - mysql
+        ports:
+            - "8080:8080"
+
+    mysql:
+        container_name: mysql
+        environment:
+            - MYSQL_ROOT_PASSWORD=toor
+        image: mysql:5.7
+        restart: always
+        volumes:
+            - "./sql.cnf:/etc/my.cnf"
+            - "./sql:/docker-entrypoint-initdb.d"
+        ports:
+            - "3306:3306"

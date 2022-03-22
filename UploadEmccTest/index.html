@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Test</title>
+</head>
+<body>
+    <input type="file" id="input" onchange="alert(document.getElementById('input').files[0])">
+</body>
+<script src="test.js"></script>
+<script>
+    let gm = null;
+    let form = document.getElementById('input');
+    Module.onRuntimeInitialized = function () {
+        gm = Module.cwrap('GenMd5', 'number', ['number', 'number']);
+        console.log('WASM initialized done!');
+        //if (form.file.value) {
+        //    process();
+        //}
+    };
+    let process = () => {
+        if (!form.files.value) {
+            return;
+        }
+        event && event.preventDefault();
+        let fileReader = new FileReader();
+        fileReader.onload = function () {
+            if (!gm) {
+                return;
+            }
+            // console.log(buffer.length);
+            // console.log(buffer);
+            // let ptr = setFile(buffer, buffer.length);
+            // console.log(offset);
+            let ptr = 0;
+            let offset = 0;
+            try {
+                let buffer = new Uint8Array(this.result);
+                offset = Module._malloc(buffer.length);
+                console.log(offset);
+                Module.HEAP8.set(buffer, offset);
+                ptr = gm(offset, buffer.length);
+            } catch (e) {
+                $errorTip.innerHtml = 'hmm.';
+                throw e;
+            }
+            let dg = Module.HEAPU32[ptr / 4];
+            alert(Module.HEAP8.subarray(dg, dg + 32 / 4)[0]);
+    };
+    form.onchange = process;
+}
+</script>
+</html>

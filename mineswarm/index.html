@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .cen {
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .swarm {
+            background: gray;
+            border-color: black;
+            border-width: 1px;
+            box-sizing: border-box;
+            float: left;
+            font-size: 1vmin;
+            overflow: hidden;
+            text-align: center;
+        }
+        #board {
+            position: absolute;
+        }
+        #board-swarm {
+            position: fixed;
+            z-index: 100;
+            display: flex;
+            flex-flow: wrap;
+        }
+        #setting {
+            position: fixed;
+            left: 0;
+            width: 10vw;
+        }
+    </style>
+    <script type="application/javascript">
+        // function touchHandler(event){
+        //     if(event.touches.length > 1){
+        //         event.preventDefault()
+        //     }
+        // }
+        // window.addEventListener("touchstart", touchHandler, false);
+    </script>
+    <script type="application/javascript">
+        // utility
+        const rand = items => items[~~(items.length * Math.random())];
+        const range = n => [...Array(n).keys()];
+        const rangeInclude = (start, end) => [...Array(end - start + 1).keys()].map(x => x + start);
+        const killChild = (elem) => {
+            while (elem.hasChildNodes()) {
+                elem.removeChild(elem.lastChild);
+            }
+        }
+
+        const setElementSize = (elem, w, h) => {
+            elem.style.width = `${w}px`;
+            elem.style.height = `${h}px`;
+        }
+
+        const setElementIncludeFontSize = (elem, w, h) => {
+            setElementSize(elem, w, h);
+            elem.style.lineHeight = `${h}px`;
+        }
+    </script>
+</head>
+<body>
+<div id="board" class="cen">
+    <div id="board-bg"></div>
+    <div id="board-swarm" class="cen"></div>
+    <div id="setting">
+
+    </div>
+</div>
+<script type="application/javascript">
+    // helper
+    const getSwarmId = id => `swarm_${id}`;
+    const getSwarmById = id => document.getElementById(getSwarmId(id));
+
+    // const var
+    let imgKeyword = 'board-bg-img';
+
+    // global var
+    let boardNode = document.getElementById('board');
+    let boardBgNode = document.getElementById('board-bg');
+    let boardSwarmNode = document.getElementById('board-swarm');
+    let init = false;
+    let firstClick = false;
+    let gameOver = false;
+
+    let reset = () => {
+        killChild(boardBgNode);
+        killChild(boardSwarmNode);
+
+        let imgCtx = document.createElement('img');
+        imgCtx.id = imgKeyword;
+        imgCtx.src = 'test.jpg';
+        let imgAdj = () => {
+            const scale = 0.98;
+
+            let winH = window.innerHeight;
+            let winW = window.innerWidth;
+            let srcImgH = imgCtx.naturalHeight;
+            let srcImgW = imgCtx.naturalWidth;
+
+            let imgW = winW * scale;
+            let imgH = imgW * srcImgH / srcImgW;
+
+            if (imgH > winH) {
+                imgH = winH * scale;
+                imgW = imgH * srcImgW / srcImgH;
+            }
+
+            setElementSize(imgCtx, imgW, imgH);
+
+            const swarmW = Math.floor(Math.min(imgH, imgW) * 0.99 * 0.025);
+            const swarmH = swarmW;
+            const rowNum = Math.floor(imgH / swarmW);
+            const colNum = Math.floor(imgW / swarmW);
+            const totalNum = rowNum * colNum;
+            const swarmNum = Math.round(totalNum * 0.1);
+
+            const getSwarmByXY = (x, y) => getSwarmById(x * colNum + y);
+            console.log(rowNum, 'x', colNum);
+            setElementSize(boardSwarmNode, colNum * swarmW, rowNum * swarmH);
+
+            if (!init) {
+                range(rowNum).forEach(i => {
+                    range(colNum).forEach(j => {
+                        let swarmCtx = document.createElement('div');
+                        swarmCtx.boomFlag = false;
+                        swarmCtx.markFlag = false;
+                        swarmCtx.id = getSwarmId(i * colNum + j);
+                        swarmCtx.idNum = i * colNum + j;
+                        swarmCtx.saw = false;
+                        // ------------- y
+                        // |
+                        // |
+                        // |
+                        // |
+                        // |
+                        // x
+                        swarmCtx.x = i;
+                        swarmCtx.y = j;
+                        swarmCtx.aroundSwarmNum = 0;
+                        swarmCtx.className = 'swarm';
+                        swarmCtx.tryClear = () => {
+                            if (!swarmCtx.boomFlag) {
+                                swarmCtx.setNormalStyle();
+                                swarmCtx.style.opacity = '0.9';
+                                //if (swarmCtx.aroundSwarmNum !== 0)
+                                swarmCtx.innerText = `${swarmCtx.aroundSwarmNum}`;
+                                swarmCtx.saw = true;
+                                return true;
+                            }
+                            return false;
+                        };
+                        swarmCtx.clear = () => {
+                            if (swarmCtx.tryClear()) return true;
+                            gameOver = true;
+                            swarmCtx.setBoomStyle();
+                            return false;
+                        };
+                        swarmCtx.setBoomStyle = () => {
+                            swarmCtx.style.background = 'red';
+                            swarmCtx.style.color = 'black';
+                            swarmCtx.innerText = '×';
+                        };
+                        swarmCtx.setMarkStyle = () => {
+                            swarmCtx.style.background = '';
+                            swarmCtx.style.color = 'red';
+                            swarmCtx.innerText = '×';
+                        };
+                        swarmCtx.setNormalStyle = () => {
+                            swarmCtx.style.background = '';
+                            swarmCtx.style.color = '';
+                            swarmCtx.innerText = '';
+                        };
+                        swarmCtx.clearAround = (x_, y_) => {
+                            if (swarmCtx.aroundSwarmNum !== 0) return;
+                            let stack = [[x_, y_]];
+                            let visited = new Set();
+                            const getVisitKey = (x, y) => `${x}|${y}`;
+                            while (stack.length !== 0) {
+                                let xy = stack.pop();
+                                let x = xy[0], y = xy[1];
+                                let ctx = getSwarmByXY(x, y);
+                                ctx.clear();
+                                visited.add(getVisitKey(x, y));
+                                rangeInclude(-1, 1).forEach(i => {
+                                    rangeInclude(-1, 1).forEach(j => {
+                                        let nx = x + i, ny = y + j;
+                                        if (nx >= 0 && ny >= 0 && nx < rowNum && ny < colNum
+                                            && (i === 0 || j === 0)) {
+                                            let nCtx = getSwarmByXY(nx, ny);
+                                            if (nCtx.aroundSwarmNum !== 0) {
+                                                nCtx.clear();
+                                                visited.add(getVisitKey(nx, ny));
+                                            }
+                                            if (!visited.has(getVisitKey(nx, ny))) stack.push([nx, ny]);
+                                        }
+                                    })
+                                })
+                            }
+                        }
+
+                        swarmCtx.ifDoFirst = () => {
+                            if (!firstClick) {
+                                range(swarmNum).forEach(() => {
+                                    while (true) {
+                                        let id = rand(range(totalNum));
+                                        if (id === swarmCtx.idNum) break;
+
+                                        let swarmNode = getSwarmById(id);
+                                        if (swarmNode.boomFlag === false) {
+                                            swarmNode.boomFlag = true;
+                                            break;
+                                        }
+                                    }
+                                });
+                                range(totalNum).forEach(i => {
+                                    let ctx = getSwarmById(i);
+                                    if (ctx.boomFlag) return;
+
+                                    let left = true, right = true, top = true, bottom = true;
+                                    if (ctx.x === 0) top = false;
+                                    if (ctx.x === rowNum - 1) bottom = false;
+                                    if (ctx.y === 0) left = false;
+                                    if (ctx.y === colNum - 1) right = false;
+
+                                    let swarmCount = 0;
+                                    let addCount = (offsetX, offsetY) => {
+                                        const x = ctx.x - offsetX;
+                                        const y = ctx.y - offsetY;
+                                        if (x >= 0 && y >= 0 && x < rowNum && y < colNum) {
+                                            if (getSwarmByXY(x, y).boomFlag) swarmCount++;
+                                        }
+                                    }
+
+                                    rangeInclude(-1, 1).forEach(i => rangeInclude(-1, 1).forEach(j => addCount(i, j)))
+                                    ctx.aroundSwarmNum = swarmCount;
+                                });
+
+                                firstClick = true;
+                            }
+                        }
+                        swarmCtx.clickTime = new Date(0);
+                        swarmCtx.onclick = ev => {
+                            let lastClick = swarmCtx.clickTime;
+                            swarmCtx.clickTime = new Date().getTime();
+                            let timeSince = swarmCtx.clickTime - lastClick;
+                            if(timeSince < 600 && timeSince > 0) {
+                                swarmCtx.doMark(ev);
+                            } else {
+                                swarmCtx.doClear(ev);
+                            }
+                        };
+
+                        swarmCtx.doClear = ev => {
+                            ev.preventDefault();
+                            swarmCtx.ifDoFirst();
+                            if (swarmCtx.saw || gameOver) return;
+                            if (swarmCtx.clear()) swarmCtx.clearAround(swarmCtx.x, swarmCtx.y);
+                            swarmCtx.checkDone();
+                        };
+                        swarmCtx.doMark = ev => {
+                            ev.preventDefault();
+                            swarmCtx.ifDoFirst();
+                            if (swarmCtx.saw || gameOver) return;
+                            if (swarmCtx.markFlag) {
+                                swarmCtx.setNormalStyle();
+                                swarmCtx.markFlag = false;
+                                return;
+                            }
+                            swarmCtx.setMarkStyle();
+                            swarmCtx.markFlag = true;
+                            swarmCtx.checkDone();
+                        };
+
+                        swarmCtx.checkDone = () => {
+                            for (let i in range(totalNum)) {
+                                let ctx = getSwarmById(i);
+                                if (ctx.boomFlag && !ctx.markFlag) return;
+                            }
+                            gameOver = true;
+                            alert("美少女生日快乐")
+                        };
+
+                        swarmCtx.oncontextmenu = swarmCtx.doMark;
+
+                        boardSwarmNode.appendChild(swarmCtx);
+                    })
+                })
+
+                init = true;
+            }
+
+            range(totalNum).forEach(i => setElementIncludeFontSize(getSwarmById(i), swarmW, swarmH));
+        };
+        imgCtx.onload = imgAdj;
+        window.onresize = imgAdj;
+        boardBgNode.appendChild(imgCtx);
+    }
+
+    // run
+    reset()
+</script>
+</body>
+</html>
