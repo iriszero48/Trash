@@ -1,7 +1,6 @@
 #include "Cryptography.h"
 
 #include <stdexcept>
-#include <climits>
 #include <cstring>
 #include <numeric>
 #include <algorithm>
@@ -11,30 +10,8 @@ namespace Detail
 {
 	namespace Bit
 	{
-		enum class Endian
-		{
-#ifdef _MSC_VER
-			Little = 0,
-			Big = 1,
-			Native = Little
-#else
-			Little = __ORDER_LITTLE_ENDIAN__,
-			Big = __ORDER_BIG_ENDIAN__,
-			Native = __BYTE_ORDER__
-#endif
-		};
-		
-		template<typename T, std::size_t... N>
-		constexpr T BSwapImpl(T i, std::index_sequence<N...>)
-		{
-			return (((i >> N * CHAR_BIT & static_cast<std::uint8_t>(-1)) << (sizeof(T) - 1 - N) * CHAR_BIT) | ...);
-		}
-
-		template<typename T, typename U = std::make_unsigned_t<T>>
-		constexpr U BSwap(T i)
-		{
-			return BSwapImpl<U>(i, std::make_index_sequence<sizeof(T)>{});
-		}
+		using __Detail::Bit::Endian;
+		using __Detail::Bit::BSwap;
 		
 		template<typename T>
 		constexpr T RotateLeft(const T x, const int n)
@@ -310,6 +287,111 @@ namespace Detail
 			0x5d681b02UL, 0x2a6f2b94UL, 0xb40bbe37UL, 0xc30c8ea1UL, 0x5a05df1bUL,
 			0x2d02ef8dUL
 		};
+	}
+
+	namespace Base85Base
+	{
+		template<uint64_t B, uint64_t E> struct Pow { static const uint64_t Value = B * Pow<B, E - 1>::Value; };
+		template<uint64_t B> struct Pow<B, static_cast<uint64_t>(0)> { static const uint64_t Value = 1; };
+
+		constexpr uint32_t Char4AsUInt(const uint8_t* buf)
+		{
+			return (buf[0] << 24) | (buf[1] << 16) | (buf[2] << 8) | buf[3];
+		}
+
+		constexpr uint32_t Char5ToUInt(const std::string_view& tab, const uint8_t* buf)
+		{
+			return tab.find((char)buf[0]) * Pow<85, 4>::Value
+				 + tab.find((char)buf[1]) * Pow<85, 3>::Value
+				 + tab.find((char)buf[2]) * Pow<85, 2>::Value
+				 + tab.find((char)buf[3]) * Pow<85, 1>::Value
+				 + tab.find((char)buf[4]) * Pow<85, 0>::Value;
+		}
+
+		std::vector<uint8_t> Encode(const char* tab, const std::vector<uint8_t>& data)
+		{
+			std::vector<uint8_t> res{};
+
+			const std::size_t lastBlockN = data.size() % 4;
+			const std::size_t blockN = data.size() / 4 + (lastBlockN != 0 ? 1 : 0);
+
+			for (std::size_t i = 0; i < blockN; i++)
+			{
+				uint32_t intV = 0;
+
+				if (i == blockN - 1 && lastBlockN != 0)
+				{
+					uint8_t buf[4]{ 0 };
+					std::copy_n(data.begin() + 4 * i, lastBlockN, buf);
+					intV = Char4AsUInt(buf);
+				}
+				else
+				{
+					intV = Char4AsUInt(data.data() + 4 * i);
+				}
+
+				res.push_back(tab[(intV / Pow<85, 4>::Value) % 85]);
+				res.push_back(tab[(intV / Pow<85, 3>::Value) % 85]);
+				res.push_back(tab[(intV / Pow<85, 2>::Value) % 85]);
+				res.push_back(tab[(intV / Pow<85, 1>::Value) % 85]);
+				res.push_back(tab[(intV / Pow<85, 0>::Value) % 85]);
+			}
+
+			if (lastBlockN != 0)
+			{
+				const auto end = res.size() - (4 - lastBlockN);
+				res.erase(res.begin() + end, res.end());
+			}
+			
+			return res;
+		}
+
+		std::vector<uint8_t> Decode(const std::string_view& tab, const std::vector<uint8_t>& data)
+		{
+			std::vector<uint8_t> res{};
+
+			const std::size_t lastBlockN = data.size() % 5;
+			const std::size_t blockN = data.size() / 5 + (lastBlockN != 0 ? 1 : 0);
+
+			for (std::size_t i = 0; i < blockN; i++)
+			{
+				uint32_t intV = 0;
+
+				if (i == blockN - 1 && lastBlockN != 0)
+				{
+					uint8_t buf[5]{ tab[84], tab[84], tab[84], tab[84], tab[84] };
+					std::copy_n(data.begin() + 5 * i, lastBlockN, buf);
+					intV = Char5ToUInt(tab, buf);
+				}
+				else
+				{
+					intV = Char5ToUInt(tab, data.data() + 5 * i);
+				}
+
+				res.push_back((char)((intV >> 24) & 0xff));
+				res.push_back((char)((intV >> 16) & 0xff));
+				res.push_back((char)((intV >> 8) & 0xff));
+				res.push_back((char)((intV >> 0) & 0xff));
+			}
+
+			if (lastBlockN != 0)
+			{
+				const auto end = res.size() - (5 - lastBlockN);
+				res.erase(res.begin() + end, res.end());
+			}
+
+			return res;
+		}
+	}
+
+	namespace Base85
+	{
+		static const char Table[] = { R"(!"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstu)" };
+	}
+
+	namespace Path85
+	{
+		static const char Table[] = { "!#$%&'()+,-.0123456789;=@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{}~" };
 	}
 }
 
@@ -978,4 +1060,28 @@ namespace Cryptography
 		return data;
 	}
 #pragma endregion Crc32
+
+#pragma region Base85
+	std::vector<uint8_t> Base85::Encode(const std::vector<uint8_t>& data)
+	{
+		return Detail::Base85Base::Encode(Detail::Base85::Table, data);
+	}
+
+	std::vector<uint8_t> Base85::Decode(const std::vector<uint8_t>& data)
+	{
+		return Detail::Base85Base::Decode(std::string_view(Detail::Base85::Table, 85), data);
+	}
+#pragma endregion Base85
+
+#pragma region Path85
+	std::vector<uint8_t> Path85::Encode(const std::vector<uint8_t>& data)
+	{
+		return Detail::Base85Base::Encode(Detail::Path85::Table, data);
+	}
+
+	std::vector<uint8_t> Path85::Decode(const std::vector<uint8_t>& data)
+	{
+		return Detail::Base85Base::Decode(std::string_view(Detail::Path85::Table, 85), data);
+	}
+#pragma endregion Path85
 }
