@@ -1,0 +1,15 @@
+﻿<Window x:Class="fk_kugou.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:fk_kugou"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="600" ScrollViewer.VerticalScrollBarVisibility="Disabled" ResizeMode="NoResize" SizeToContent="WidthAndHeight" >
+    <Grid Height="450" Width="600">
+        <TextBlock HorizontalAlignment="Left" Margin="10,11,0,0" TextWrapping="NoWrap" Text="链接" VerticalAlignment="Top"/>
+        <TextBox x:Name="DownInput" HorizontalAlignment="Left" Margin="39,10,0,0" TextWrapping="NoWrap" VerticalAlignment="Top" Width="520" MaxLines="1"/>
+        <Button x:Name="DownBtn" Content="下载" HorizontalAlignment="Left" Margin="564,10,0,0" VerticalAlignment="Top" FontSize="11" Click="DownBtn_Click"/>
+        <TextBlock x:Name="DownLog" Text="" HorizontalAlignment="Center" Margin="0,32,0,0" VerticalAlignment="Top" Height="393" Width="580"/>
+    </Grid>
+</Window>
