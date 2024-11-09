@@ -1,0 +1,66 @@
+@use 'sass:list';
+@use 'sass:math';
+
+$a: ();
+$b: ();
+$c: ();
+$sumVal: 0.0;
+
+@for $i from 1 through 128 * 128 {
+    // $a: list.append($a, calc($i / (128 * 128)))
+    $a : list.append($a, math.random())
+}
+
+@for $i from 1 through 128 * 128 {
+    $b: list.append($b, 1.0)
+}
+
+@for $i from 1 through 128 * 128 {
+    $c: list.append($c, 0.0)
+}
+
+@function add($mat, $val) {
+    $res: ();
+    @each $v in $mat {
+        $res: list.append($res, calc($v + $val));
+    }
+    @return $res;
+}
+
+@function div($mat, $val) {
+    $res: ();
+    @each $v in $mat {
+        $res: list.append($res, calc($v / $val));
+    }
+    @return $res;
+}
+
+@function mul($a, $b) {
+    $res: ();
+    @for $row from 0 through 128 - 1 {
+        @for $col from 0 through 128 - 1 {
+            $v: 0.0;
+            @for $i from 0 through 128 - 1 {
+                $v: $v + list.nth($a, calc($row * 128 + $i + 1)) * list.nth($b, calc($i * 128 + $col + 1));
+            }
+            $res: list.append($res, $v);
+        }
+    }
+    @return $res;
+}
+
+@for $i from 1 through 1 {
+    $b: add($b, $i - 1);
+    $c: mul($a, $b);
+
+    $b: add($b, $i);
+    $a: mul($c, $b);
+
+    $a: div($a, list.nth($c, 128 * 128));
+}
+
+@each $v in $a {
+    $sumVal: $sumVal + $v;
+}
+
+@debug $sumVal;

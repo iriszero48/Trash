@@ -1,0 +1,4 @@
+#!/usr/bin/txr
+@(output)
+Hello, world!
+@(end)
